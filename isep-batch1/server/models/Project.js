@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
-const AchievementSchema = new mongoose.Schema({
+const ProjectSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: true
   },
-  title: {
+  projectName: {
     type: String,
     required: true,
     trim: true
@@ -14,15 +15,18 @@ const AchievementSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  date: {
-    type: Date,
-    default: Date.now
-  },
-  category: {
+  technologies: [{
+    type: String
+  }],
+  projectImage: {
     type: String,
-    default: 'General'
+    default: ''
   },
-  proofImage: {
+  githubLink: {
+    type: String,
+    default: ''
+  },
+  liveLink: {
     type: String,
     default: ''
   },
@@ -32,4 +36,4 @@ const AchievementSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Achievement', AchievementSchema);
+module.exports = mongoose.model('Project', ProjectSchema);
