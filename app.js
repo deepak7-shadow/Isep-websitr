@@ -132,6 +132,7 @@ class IsepArchiveApp {
     this.exhibitMode = 'warm-amber';
     this.isAdmin = localStorage.getItem('isep_admin_token') ? true : false;
     this.adminProfile = null;
+    this.currentUserId = null;
     this.adminContentType = 'activities';
     this.selectedRating = 5;
 
@@ -159,6 +160,7 @@ class IsepArchiveApp {
     if (_sb) {
       _sb.auth.getSession().then(async ({ data }) => {
         if (data?.session) {
+          this.currentUserId = data.session.user?.id || null;
           // Verify the user is still approved before restoring admin session
           const userEmail = data.session.user?.email;
           try {
@@ -234,7 +236,7 @@ class IsepArchiveApp {
         return;
       }
       const hash = window.location.hash.replace('#', '') || 'home';
-      const valid = ['home', 'gallery', 'certificates', 'thoughts-wall', 'members', 'dashboard', 'member-profile', 'admin-portal', ...Object.keys(CONTENT_TYPES)];
+      const valid = ['home', 'gallery', 'certificates', 'thoughts-wall', 'members', 'heads', 'dashboard', 'member-profile', 'admin-portal', ...Object.keys(CONTENT_TYPES)];
       this.navigateTo(valid.includes(hash) ? hash : 'home', false);
     };
 
@@ -292,6 +294,8 @@ class IsepArchiveApp {
       this.renderAdminView();
     } else if (route === 'members') {
       this.renderMembers();
+    } else if (route === 'heads') {
+      this.renderHeads();
     } else if (route === 'dashboard') {
       this.renderMemberDashboard();
     } else if (route === 'member-profile') {
@@ -330,6 +334,7 @@ class IsepArchiveApp {
           if (!this.members.length) {
             this.members = (await sbTable('members')).map(mapMember);
           }
+
           container.innerHTML = this.members.length ? this.members.map((member) => `
             <article class="bg-surface-container rounded-xl border border-outline-variant/20 p-space-md flex flex-col gap-space-sm">
               <div class="flex items-center gap-space-sm">
@@ -341,6 +346,14 @@ class IsepArchiveApp {
               <a href="/members/${encodeURIComponent(member.slug)}" data-member-slug="${escapeHtml(member.slug)}" class="mt-auto text-sm text-primary font-semibold hover:underline">View portfolio →</a>
             </article>
           `).join('') : '<div class="col-span-full rounded-xl border border-outline-variant/20 bg-surface-container p-space-lg text-center text-on-surface-variant">No approved member profiles are available yet.</div>';
+        }
+
+        async renderHeads() {
+          const container = document.getElementById('heads-content');
+          if (!container) return;
+          container.innerHTML = '<div class="py-space-xl text-center text-on-surface-variant">Loading ISEP Heads...</div>';
+          const rows = await sbFetch('admin_users', { role: 'head', is_approved: true });
+          container.innerHTML = `<div class="mb-space-lg"><span class="text-xs text-primary uppercase tracking-widest">ISEP structure</span><h1 class="font-serif text-4xl text-on-surface font-bold mt-1">ISEP Heads / Admins</h1><p class="text-on-surface-variant mt-2">The two elevated ISEP accounts responsible for member approvals and portal stewardship.</p></div><div class="grid gap-space-md md:grid-cols-2">${rows.length ? rows.map(row => `<article class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg flex gap-space-md items-start">${row.image_url ? `<img src="${escapeHtml(row.image_url)}" alt="${escapeHtml(row.full_name || '')}" class="w-24 h-24 rounded-2xl object-cover"/>` : `<div class="w-24 h-24 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary text-3xl font-bold">${escapeHtml((row.full_name || 'H').charAt(0))}</div>`}<div><span class="text-xs text-primary uppercase tracking-widest">ISEP Head / Admin</span><h2 class="font-serif text-2xl text-on-surface font-bold mt-1">${escapeHtml(row.full_name || 'ISEP Head')}</h2><p class="text-sm text-on-surface-variant mt-2">${escapeHtml(row.description || 'Elevated ISEP member approval and portal administration.')}</p></div></article>`).join('') : '<div class="col-span-full rounded-xl border border-outline-variant/20 bg-surface-container p-space-lg text-center text-on-surface-variant">Head profiles will appear here after the two approved ISEP Head accounts and images are configured.</div>'}</div><div class="mt-space-xl rounded-xl border border-outline-variant/20 bg-surface-container p-space-lg text-center text-on-surface-variant">ISEP structure: Main Mentors / Main Admins → ISEP Heads / Admins → 18 ISEP Members.</div>`;
         }
 
         async renderMemberProfile(slug) {
@@ -398,8 +411,9 @@ class IsepArchiveApp {
             document.getElementById('member-login-form')?.addEventListener('submit', async (event) => {
               event.preventDefault();
               const message = document.getElementById('member-login-message');
-              const { error } = await _sb.auth.signInWithPassword({ email: document.getElementById('member-login-email').value.trim(), password: document.getElementById('member-login-password').value });
+              const { data: loginData, error } = await _sb.auth.signInWithPassword({ email: document.getElementById('member-login-email').value.trim(), password: document.getElementById('member-login-password').value });
               if (error) { message.textContent = error.message; return; }
+              this.currentUserId = loginData.user?.id || null;
               this.renderMemberDashboard();
             });
             document.getElementById('member-register-form')?.addEventListener('submit', async (event) => {
@@ -432,7 +446,8 @@ class IsepArchiveApp {
           const profile = mapMember(member);
           const completionFields = [profile.fullName, profile.bio, profile.photo, profile.skills.length, profile.github || profile.linkedin || profile.portfolio];
           const completion = Math.round((completionFields.filter(Boolean).length / completionFields.length) * 100);
-          container.innerHTML = `<div class="space-y-space-lg"><div><span class="text-xs text-primary uppercase tracking-widest">Member Workspace</span><h1 class="font-serif text-4xl text-on-surface font-bold">Welcome, ${escapeHtml(profile.fullName)}</h1><p class="text-on-surface-variant mt-1">Profile completion: ${completion}%</p></div><form id="member-profile-form" class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg space-y-space-sm"><input name="full_name" value="${escapeHtml(member.full_name || '')}" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><textarea name="bio" rows="4" placeholder="About you" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface">${escapeHtml(member.bio || '')}</textarea><input name="skills" value="${escapeHtml(profile.skills.join(', '))}" placeholder="Skills, comma separated" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_url" type="url" value="${escapeHtml(member.photo_url || '')}" placeholder="Profile photo URL (optional)" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_file" type="file" accept="image/*" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><div class="flex gap-space-sm"><input name="github" type="url" value="${escapeHtml(member.github || '')}" placeholder="GitHub URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="linkedin" type="url" value="${escapeHtml(member.linkedin || '')}" placeholder="LinkedIn URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/></div><button class="px-space-lg py-2.5 rounded bg-primary text-on-primary font-semibold">Save profile</button><p id="member-save-message" class="text-sm text-on-surface-variant"></p></form><a data-member-slug="${escapeHtml(profile.slug)}" href="/members/${encodeURIComponent(profile.slug)}" class="inline-flex px-space-lg py-2.5 rounded border border-primary/30 text-primary">View public portfolio →</a></div>`;
+          const memberProjects = await sbFetch('member_projects', { member_id: member.id });
+          container.innerHTML = `<div class="space-y-space-lg"><div><span class="text-xs text-primary uppercase tracking-widest">Member Workspace</span><h1 class="font-serif text-4xl text-on-surface font-bold">Welcome, ${escapeHtml(profile.fullName)}</h1><p class="text-on-surface-variant mt-1">Profile completion: ${completion}%</p></div><form id="member-profile-form" class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg space-y-space-sm"><input name="full_name" value="${escapeHtml(member.full_name || '')}" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><textarea name="bio" rows="4" placeholder="About you" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface">${escapeHtml(member.bio || '')}</textarea><input name="skills" value="${escapeHtml(profile.skills.join(', '))}" placeholder="Skills, comma separated" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_url" type="url" value="${escapeHtml(member.photo_url || '')}" placeholder="Profile photo URL (optional)" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_file" type="file" accept="image/*" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><div class="flex gap-space-sm"><input name="github" type="url" value="${escapeHtml(member.github || '')}" placeholder="GitHub URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="linkedin" type="url" value="${escapeHtml(member.linkedin || '')}" placeholder="LinkedIn URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/></div><button class="px-space-lg py-2.5 rounded bg-primary text-on-primary font-semibold">Save profile</button><p id="member-save-message" class="text-sm text-on-surface-variant"></p></form><section class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg"><h2 class="font-serif text-2xl text-on-surface font-bold">Projects</h2><form id="member-project-form" class="grid gap-space-sm md:grid-cols-2 mt-space-sm"><input name="title" required placeholder="Project title" class="px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="project_url" type="url" placeholder="Project URL" class="px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><textarea name="description" placeholder="Description" class="md:col-span-2 px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"></textarea><button class="md:col-span-2 justify-self-start px-space-md py-2 rounded bg-primary text-on-primary">Add project</button></form><div class="mt-space-md space-y-space-xs">${memberProjects.length ? memberProjects.map(row => `<div class="flex items-center justify-between gap-space-sm rounded bg-surface-container-high p-space-sm"><span class="text-sm text-on-surface">${escapeHtml(row.title)}</span><button data-member-project-delete="${row.id}" class="text-xs text-error hover:underline">Delete</button></div>`).join('') : '<p class="text-sm text-on-surface-variant mt-space-sm">No projects added yet.</p>'}</div></section><a data-member-slug="${escapeHtml(profile.slug)}" href="/members/${encodeURIComponent(profile.slug)}" class="inline-flex px-space-lg py-2.5 rounded border border-primary/30 text-primary">View public portfolio →</a></div>`;
           document.getElementById('member-profile-form')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             const form = new FormData(event.currentTarget);
@@ -442,6 +457,15 @@ class IsepArchiveApp {
             document.getElementById('member-save-message').textContent = error ? error.message : 'Profile saved.';
             if (!error) { this.members = []; this.renderMemberDashboard(); }
           });
+          document.getElementById('member-project-form')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const saved = await sbInsert('member_projects', { member_id: member.id, title: String(form.get('title') || '').trim(), description: String(form.get('description') || '').trim(), project_url: String(form.get('project_url') || '').trim() });
+            if (saved) this.renderMemberDashboard();
+          });
+          document.querySelectorAll('[data-member-project-delete]').forEach(button => button.addEventListener('click', async () => {
+            if (await sbDelete('member_projects', button.getAttribute('data-member-project-delete'))) this.renderMemberDashboard();
+          }));
   }
 
   // --- View-Only Protection Feature (Security Requirement) ---
@@ -1086,11 +1110,29 @@ class IsepArchiveApp {
             <div class="flex items-center gap-2">${t.photo ? `<img src="${escapeHtml(t.photo)}" alt="" class="w-7 h-7 rounded-full object-cover"/>` : ''}<span class="font-headline-sm text-[16px] ${authorColor}">${escapeHtml(t.name)}</span></div>
               <span class="font-body-sm text-body-sm ${roleColor}">Verified Visitor / Scholar</span>
             </div>
-            <span class="material-symbols-outlined text-primary/70 text-[20px]">format_quote</span>
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary/70 text-[20px]">format_quote</span>${t.authorId && t.authorId === this.currentUserId ? `<button data-thought-edit="${t._id}" class="text-xs text-primary hover:underline">Edit</button><button data-thought-delete="${t._id}" class="text-xs text-error hover:underline">Delete</button>` : ''}</span>
           </div>
         </div>
       `;
     }).join('');
+    container.querySelectorAll('[data-thought-edit]').forEach(button => button.addEventListener('click', async () => {
+      const thought = approved.find(item => item._id === button.getAttribute('data-thought-edit'));
+      if (!thought) return;
+      const message = window.prompt('Edit your thought', thought.message);
+      if (message === null || !message.trim()) return;
+      if (await sbUpdate('thoughts', thought._id, { message: message.trim(), status: 'pending' })) {
+        thought.message = message.trim();
+        thought.status = 'pending';
+        this.renderThoughtsWall();
+        this.showToast('Your edit was submitted for moderation.');
+      }
+    }));
+    container.querySelectorAll('[data-thought-delete]').forEach(button => button.addEventListener('click', async () => {
+      if (window.confirm('Delete your thought?') && await sbDelete('thoughts', button.getAttribute('data-thought-delete'))) {
+        this.thoughts = this.thoughts.filter(item => item._id !== button.getAttribute('data-thought-delete'));
+        this.renderThoughtsWall();
+      }
+    }));
 
     const countEl = document.getElementById('thoughts-count-indicator');
     if (countEl) countEl.textContent = `${approved.length} Public Reflections`;
@@ -1327,7 +1369,21 @@ class IsepArchiveApp {
     const body = document.getElementById('admin-content-table-body');
     if (!body) return;
     const rows = await sbFetch(config.table);
-    body.innerHTML = rows.length ? rows.map(row => `<tr><td class="py-2.5 px-3 text-on-surface">${escapeHtml(row.title || '')}</td><td class="py-2.5 px-3">${escapeHtml(row.event_date || '')}</td><td class="py-2.5 px-3 max-w-sm truncate">${escapeHtml(row.description || '')}</td><td class="py-2.5 px-3 text-right"><button data-content-approve="${row.id}" class="text-primary hover:underline mr-3">${row.status === 'approved' ? 'Hide' : 'Approve'}</button><button data-content-delete="${row.id}" class="text-error hover:underline">Delete</button></td></tr>`).join('') : '<tr><td colspan="4" class="py-space-lg text-center text-on-surface-variant">No records yet. Add the first real record above.</td></tr>';
+    body.innerHTML = rows.length ? rows.map(row => `<tr><td class="py-2.5 px-3 text-on-surface">${escapeHtml(row.title || '')}</td><td class="py-2.5 px-3">${escapeHtml(row.event_date || '')}</td><td class="py-2.5 px-3 max-w-sm truncate">${escapeHtml(row.description || '')}</td><td class="py-2.5 px-3 text-right"><button data-content-edit="${row.id}" class="text-primary hover:underline mr-3">Edit</button><button data-content-approve="${row.id}" class="text-primary hover:underline mr-3">${row.status === 'approved' ? 'Hide' : 'Approve'}</button><button data-content-delete="${row.id}" class="text-error hover:underline">Delete</button></td></tr>`).join('') : '<tr><td colspan="4" class="py-space-lg text-center text-on-surface-variant">No records yet. Add the first real record above.</td></tr>';
+    body.querySelectorAll('[data-content-edit]').forEach(button => button.addEventListener('click', async () => {
+      const row = rows.find(item => item.id === button.getAttribute('data-content-edit'));
+      if (!row) return;
+      const title = window.prompt('Title', row.title || '');
+      if (title === null) return;
+      const description = window.prompt('Description', row.description || '');
+      if (description === null) return;
+      const extra = window.prompt('Additional details', row.extra || '');
+      if (extra === null) return;
+      if (await sbUpdate(config.table, row.id, { title: title.trim(), description: description.trim(), extra: extra.trim() })) {
+        this.showToast('Record updated.');
+        this.setAdminContentType(type);
+      }
+    }));
     body.querySelectorAll('[data-content-approve]').forEach(button => button.addEventListener('click', async () => {
       const row = rows.find(item => item.id === button.getAttribute('data-content-approve'));
       if (row && await sbUpdate(config.table, row.id, { status: row.status === 'approved' ? 'hidden' : 'approved' })) this.setAdminContentType(type);

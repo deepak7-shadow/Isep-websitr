@@ -10,6 +10,9 @@ create extension if not exists pgcrypto;
 
 alter table public.admin_users add column if not exists role text not null default 'admin';
 alter table public.admin_users add column if not exists full_name text;
+alter table public.admin_users add column if not exists description text default '';
+alter table public.admin_users add column if not exists image_url text default '';
+alter table public.admin_users add column if not exists is_main_admin boolean not null default false;
 alter table public.thoughts add column if not exists author_id uuid references auth.users(id) on delete set null;
 alter table public.thoughts add column if not exists profile_photo text default '';
 
@@ -50,9 +53,12 @@ end $$;
 
 create or replace function public.is_approved_admin()
 returns boolean language sql stable security definer set search_path = public
-as $$ select exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.is_approved = true); $$;
+as $$ select exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.is_approved = true and a.role in ('head','admin','mentor')); $$;
 
 alter table public.members enable row level security;
+alter table public.admin_users enable row level security;
+drop policy if exists "approved heads are public" on public.admin_users;
+create policy "approved heads are public" on public.admin_users for select using (role = 'head' and is_approved = true);
 drop policy if exists "approved members are public" on public.members;
 drop policy if exists "members update own profile" on public.members;
 drop policy if exists "members view own registration" on public.members;
@@ -100,9 +106,9 @@ browser uses only the public anon key; never put a service-role key in
 Create/approve the two ISEP Head records after their Auth accounts exist:
 
 ```sql
-update public.admin_users set role = 'head', full_name = 'Ganesh Mani Bhaiya', is_approved = true
+update public.admin_users set role = 'mentor', is_main_admin = true, full_name = 'Ganesh Mani Bhaiya', is_approved = true
 where lower(email) = lower('GANESH_AUTH_EMAIL');
-update public.admin_users set role = 'head', full_name = 'Amrutha Didi', is_approved = true
+update public.admin_users set role = 'mentor', is_main_admin = true, full_name = 'Amrutha Didi', is_approved = true
 where lower(email) = lower('AMRUTHA_AUTH_EMAIL');
 ```
 
