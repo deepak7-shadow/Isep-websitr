@@ -15,7 +15,7 @@ Reconstructed directly from Stitch project `11606814950829122029` and backed by 
 - **Pavilion Gateways**: Direct portals into Pavilion I (Gallery), Pavilion II (Certifications), and Pavilion III (Thoughts Wall).
 
 ### 2. Pavilion I: The Gallery Hall (`#gallery` / `gallery.html`)
-- **Organized Albums**: Filter by *All*, *Events*, *Sessions*, *Team Activities*, or search dynamically by title and caption.
+- **Organized Albums**: Filter by *News*, *Classroom Activities*, *Classes*, *Self-Study Sessions*, *Fun Memories*, *Hackathons*, *Meetings / Events*, or search dynamically by title and caption.
 - **Device Photo Upload**: Direct file picker supporting PNG, JPG, WEBP, and GIF with preview.
 - **Full-Screen Lightbox**: High-fidelity view-only inspection modal.
 - **View-Only Protection**: Context menu, right-click, image dragging, and hotkey downloads (`Ctrl+S`, `Ctrl+P`) disabled to preserve archival integrity.
@@ -93,3 +93,13 @@ UPDATE public.admin_users
 5. Once approved, the coordinator can sign in using the **"Sign In"** tab.
 
 > **Note:** Unapproved or unverified users are automatically signed out with a clear message. There are no demo/hardcoded credentials.
+
+## Member directory and portfolios
+
+The deployed SPA now includes `#members`, `/members/<slug>` public portfolios,
+and `#dashboard` for authenticated members. Profiles and portfolio records are
+stored in Supabase; the required tables and row-level security policies are in
+[`SUPABASE_SCHEMA.md`](SUPABASE_SCHEMA.md). Apply that SQL before enabling
+member accounts. Members can update only the profile linked to their Supabase
+Auth user, while approved profiles and portfolio records remain publicly
+readable.
