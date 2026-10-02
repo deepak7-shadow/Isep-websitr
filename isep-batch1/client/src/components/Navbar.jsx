@@ -8,6 +8,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
     { id: 'achievements', label: 'Achievements' },
     { id: 'mock-interviews', label: 'Mock Interviews' },
     { id: 'thoughts', label: 'Thoughts Wall' },
+    { id: 'activities', label: 'Activities' },
     { id: 'admin', label: 'Admin Portal' }
   ];
 
@@ -34,12 +35,12 @@ export default function Navbar({ activeTab, setActiveTab }) {
         </div>
 
         {/* Navigation Items */}
-        <nav className="hidden md:flex items-center gap-1 bg-[#1b1b1e]/80 p-1 rounded-full border border-[#f3be65]/20">
+        <nav className="flex flex-wrap items-center justify-center gap-1 bg-[#1b1b1e]/80 p-1 rounded-full border border-[#f3be65]/20">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all ${
                 activeTab === item.id
                   ? 'bg-[#f3be65] text-[#131316] font-semibold shadow-[0_0_12px_rgba(243,190,101,0.3)]'
                   : 'text-[#e4e1e5]/80 hover:text-[#f3be65] hover:bg-[#25252a]/60'

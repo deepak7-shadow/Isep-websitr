@@ -46,6 +46,13 @@ export const thoughtsApi = {
   updateStatus: (id, status) => api.patch(`/thoughts/${id}`, { status }),
   delete: (id) => api.delete(`/thoughts/${id}`)
 };
+export const activitiesApi = {
+  getAll: () => api.get('/activities'),
+  getById: (id) => api.get(`/activities/${id}`),
+  create: (data) => api.post('/activities', data),
+  update: (id, data) => api.put(`/activities/${id}`, data),
+  delete: (id) => api.delete(`/activities/${id}`)
+};
 
 export const membersApi = {
   getAll: () => api.get('/profile')

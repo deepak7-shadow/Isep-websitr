@@ -7,6 +7,7 @@ import Certificates from './pages/Certificates';
 import Achievements from './pages/Achievements';
 import Thoughts from './pages/Thoughts';
 import Admin from './pages/Admin';
+import Activities from './pages/Activities';
 import MockInterviews from './pages/MockInterviews';
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           {activeTab === 'achievements' && <Achievements />}
           {activeTab === 'mock-interviews' && <MockInterviews />}
           {activeTab === 'thoughts' && <Thoughts />}
+          {activeTab === 'activities' && <Activities />}
           {activeTab === 'admin' && <Admin />}
         </main>
       </div>
