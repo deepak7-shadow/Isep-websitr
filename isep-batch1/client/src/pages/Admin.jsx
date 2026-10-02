@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
 import PendingApprovals from './PendingApprovals';
+import Memories from './Memories';
 import {
   authApi,
   photosApi,
@@ -10,6 +11,7 @@ import {
   activitiesApi,
   hackathonsApi,
   mockInterviewsApi,
+  memoriesApi,
 } from '../api/axios';
 import api from '../api/axios';
 
@@ -23,6 +25,7 @@ function DashboardPanel({ stats }) {
     { label: 'Mock Interviews', value: stats.mockInterviews, icon: '🎤', color: 'text-rose-400', border: 'border-rose-500/30' },
     { label: 'Photos Archived', value: stats.photos, icon: '🖼️', color: 'text-[#f3be65]', border: 'border-[#f3be65]/30' },
     { label: 'Certificates Issued', value: stats.certificates, icon: '📜', color: 'text-[#f3be65]', border: 'border-[#f3be65]/30' },
+    { label: 'Fun Memories', value: stats.memories, icon: '🎉', color: 'text-amber-400', border: 'border-amber-500/30' },
     { label: 'Pending Moderation', value: stats.pendingThoughts, icon: '💭', color: 'text-amber-400', border: 'border-amber-500/30' },
   ];
 
@@ -460,7 +463,7 @@ export default function Admin({ onSwitchToPublic }) {
 
   const loadData = useCallback(async () => {
     try {
-      const [pRes, cRes, aRes, tRes, actRes, hackRes, miRes] = await Promise.all([
+      const [pRes, cRes, aRes, tRes, actRes, hackRes, miRes, memRes] = await Promise.all([
         photosApi.getAll().catch(() => ({ data: { count: 0 } })),
         certsApi.getAll().catch(() => ({ data: { count: 0 } })),
         achievementsApi.getAll().catch(() => ({ data: { count: 0 } })),
@@ -468,6 +471,7 @@ export default function Admin({ onSwitchToPublic }) {
         activitiesApi.getAll().catch(() => ({ data: { count: 0 } })),
         hackathonsApi.getAll().catch(() => ({ data: { count: 0 } })),
         mockInterviewsApi.getAll().catch(() => ({ data: { count: 0 } })),
+        memoriesApi.getAll().catch(() => ({ data: { count: 0 } })),
       ]);
 
       const allThoughts = tRes.data.data || [];
@@ -489,6 +493,7 @@ export default function Admin({ onSwitchToPublic }) {
         activities: actRes.data.count || (actRes.data.data || actRes.data || []).length || 0,
         hackathons: hackRes.data.count || (hackRes.data.data || hackRes.data || []).length || 0,
         mockInterviews: miRes.data.count || (miRes.data.data || miRes.data || []).length || 0,
+        memories: memRes.data.count || (memRes.data.data || []).length || 0,
         photos: pRes.data.count || 0,
         certificates: cRes.data.count || 0,
         achievements: aRes.data.count || 0,
@@ -540,6 +545,7 @@ export default function Admin({ onSwitchToPublic }) {
     activities: 'Activities',
     hackathons: 'Hackathons',
     mockInterviews: 'Mock Interviews',
+    memories: 'Fun & Memories',
     photos: 'Photo Gallery',
     certificates: 'Certificates',
     achievements: 'Achievements',
@@ -589,6 +595,8 @@ export default function Admin({ onSwitchToPublic }) {
             <p className="text-xs">Full admin CRUD for mock interviews — see the public Mock Interviews page for now.</p>
           </div>
         );
+      case 'memories':
+        return <Memories />;
       default:
         return <DashboardPanel stats={stats} />;
     }
@@ -605,6 +613,7 @@ export default function Admin({ onSwitchToPublic }) {
         activities: stats.activities,
         hackathons: stats.hackathons,
         mockInterviews: stats.mockInterviews,
+        memories: stats.memories,
         photos: stats.photos,
         certificates: stats.certificates,
         achievements: stats.achievements,
