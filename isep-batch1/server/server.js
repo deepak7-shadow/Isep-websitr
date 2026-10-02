@@ -23,13 +23,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount Routes according to Section 8
+// Mount Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/photos', require('./routes/photos'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/achievements', require('./routes/achievements'));
 app.use('/api/thoughts', require('./routes/thoughts'));
+
+// M8 — Member Profile / Portfolio Backend
+app.use('/api/profile', require('./routes/profile'));
+app.use('/api/projects', require('./routes/projects'));
+app.use('/api/certificates', require('./routes/memberCertificates'));
+app.use('/api/achievements', require('./routes/memberAchievements'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -57,6 +63,13 @@ app.listen(PORT, () => {
   console.log(`  - POST   /api/thoughts`);
   console.log(`  - PATCH  /api/thoughts/:id (Admin)`);
   console.log(`  - DELETE /api/thoughts/:id (Admin)`);
+  // M8 routes
+  console.log(`  - GET    /api/profile (all members)`);
+  console.log(`  - GET    /api/profile/:userId`);
+  console.log(`  - PUT    /api/profile (own)`);
+  console.log(`  - CRUD   /api/projects`);
+  console.log(`  - CRUD   /api/certificates/member`);
+  console.log(`  - CRUD   /api/achievements/member`);
 });
 
 module.exports = app;
