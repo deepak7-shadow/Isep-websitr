@@ -2,14 +2,15 @@ import React from 'react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const navItems = [
-  { id: 'home', label: 'Overview' },
-  { id: 'gallery', label: 'Photo Gallery' },
-  { id: 'certificates', label: 'Certifications' },
-  { id: 'achievements', label: 'Achievements' },
-  { id: 'thoughts', label: 'Thoughts Wall' },
-  { id: 'activities', label: 'Activities' },
-  { id: 'admin', label: 'Admin Portal' }
-];
+    { id: 'home', label: 'Overview' },
+    { id: 'gallery', label: 'Photo Gallery' },
+    { id: 'certificates', label: 'Certifications' },
+    { id: 'achievements', label: 'Achievements' },
+    { id: 'mock-interviews', label: 'Mock Interviews' },
+    { id: 'thoughts', label: 'Thoughts Wall' },
+    { id: 'activities', label: 'Activities' },
+    { id: 'admin', label: 'Admin Portal' }
+  ];
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[#131316]/90 border-b border-[#f3be65]/20 px-6 py-4 transition-all">

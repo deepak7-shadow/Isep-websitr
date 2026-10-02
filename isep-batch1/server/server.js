@@ -40,6 +40,9 @@ app.use('/api/projects', require('./routes/projects'));
 app.use('/api/certificates', require('./routes/memberCertificates'));
 app.use('/api/achievements', require('./routes/memberAchievements'));
 
+// M15 — Mock Interviews
+app.use('/api/mock-interviews', require('./routes/mockInterviews'));
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('[API Error]', err.stack);
@@ -73,6 +76,7 @@ app.listen(PORT, () => {
   console.log(`  - CRUD   /api/projects`);
   console.log(`  - CRUD   /api/certificates/member`);
   console.log(`  - CRUD   /api/achievements/member`);
+  console.log(`  - CRUD   /api/mock-interviews (Admin create/edit/delete)`);
 });
 
 module.exports = app;
