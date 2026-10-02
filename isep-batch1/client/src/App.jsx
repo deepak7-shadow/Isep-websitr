@@ -9,6 +9,7 @@ import Thoughts from './pages/Thoughts';
 import Admin from './pages/Admin';
 import Activities from './pages/Activities';
 import MockInterviews from './pages/MockInterviews';
+import TCSMeetings from './pages/TCSMeetings';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -37,6 +38,7 @@ export default function App() {
           {activeTab === 'thoughts' && <Thoughts />}
           {activeTab === 'activities' && <Activities />}
           {activeTab === 'admin' && <Admin />}
+          {activeTab === 'tcs-meetings' && <TCSMeetings />}          
         </main>
       </div>
 
