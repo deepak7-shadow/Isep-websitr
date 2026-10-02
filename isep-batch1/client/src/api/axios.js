@@ -6,7 +6,8 @@ const api = axios.create({
 
 // Intercept requests and attach Bearer token if present
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('isep_admin_token');
+  // The archive's legacy admin portal uses isep_admin_token; the member auth flow uses isep_token.
+  const token = localStorage.getItem('isep_admin_token') || localStorage.getItem('isep_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -44,6 +45,18 @@ export const thoughtsApi = {
   submit: (data) => api.post('/thoughts', data),
   updateStatus: (id, status) => api.patch(`/thoughts/${id}`, { status }),
   delete: (id) => api.delete(`/thoughts/${id}`)
+};
+
+export const membersApi = {
+  getAll: () => api.get('/profile')
+};
+
+export const mockInterviewsApi = {
+  getAll: () => api.get('/mock-interviews'),
+  getOne: (id) => api.get(`/mock-interviews/${id}`),
+  create: (data) => api.post('/mock-interviews', data),
+  update: (id, data) => api.put(`/mock-interviews/${id}`, data),
+  delete: (id) => api.delete(`/mock-interviews/${id}`)
 };
 
 export const authApi = {

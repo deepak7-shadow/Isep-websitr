@@ -6,6 +6,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
     { id: 'gallery', label: 'Photo Gallery' },
     { id: 'certificates', label: 'Certifications' },
     { id: 'achievements', label: 'Achievements' },
+    { id: 'mock-interviews', label: 'Mock Interviews' },
     { id: 'thoughts', label: 'Thoughts Wall' },
     { id: 'admin', label: 'Admin Portal' }
   ];
