@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Certificates from './pages/Certificates';
@@ -12,6 +13,7 @@ import MockInterviews from './pages/MockInterviews';
 import Hackathons from './pages/Hackathons';
 import Memories from './pages/Memories';
 import TCSMeetings from './pages/TCSMeetings';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -19,10 +21,16 @@ export default function App() {
   const [selectedCert, setSelectedCert] = useState(null);
 
   // Admin view is full-screen — rendered outside the public Navbar/Footer
+  // ProtectedRoute guards this to admin-role users only.
   if (activeTab === 'admin') {
     return (
       <div className="selection:bg-[#f3be65]/30 selection:text-[#f3be65]">
-        <Admin onSwitchToPublic={() => setActiveTab('home')} />
+        <ProtectedRoute
+          allowedRoles={['admin']}
+          onRedirectToLogin={() => setActiveTab('home')}
+        >
+          <Admin onSwitchToPublic={() => setActiveTab('home')} />
+        </ProtectedRoute>
       </div>
     );
   }
@@ -51,6 +59,15 @@ export default function App() {
           {activeTab === 'activities' && <Activities />}
           {activeTab === 'memories' && <Memories />}
           {activeTab === 'tcs-meetings' && <TCSMeetings />}
+
+          {/* 404 fallback — catches any unknown/mistyped tabs */}
+          {![
+            'home', 'gallery', 'certificates', 'achievements',
+            'hackathons', 'mock-interviews', 'thoughts', 'activities',
+            'memories', 'tcs-meetings', 'admin'
+          ].includes(activeTab) && (
+            <NotFound onGoHome={() => setActiveTab('home')} />
+          )}
         </main>
       </div>
 
