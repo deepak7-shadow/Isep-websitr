@@ -86,7 +86,38 @@ async function uploadMediaFile(file, folder = 'general') {
 function mapPhoto(r) { return { _id: r.id, title: r.title, caption: r.caption || '', album: r.album, imageUrl: r.image_url, uploadedAt: r.uploaded_at }; }
 function mapCert(r) { return { _id: r.id, title: r.title, recipientName: r.recipient_name, issueDate: r.issue_date, category: r.category, fileUrl: r.file_url }; }
 
-function mapThought(r) { return { _id: r.id, name: r.name, message: r.message, rating: r.rating, status: r.status, createdAt: r.created_at }; }
+function mapThought(r) { return { _id: r.id, name: r.name, message: r.message, rating: r.rating, status: r.status, createdAt: r.created_at, authorId: r.author_id, photo: r.profile_photo || '' }; }
+function mapMember(r) {
+  return {
+    _id: r.id,
+    fullName: r.full_name || r.name || '',
+    slug: r.slug || (r.full_name || r.name || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    photo: r.photo_url || r.profile_photo || '',
+    bio: r.bio || '',
+    skills: Array.isArray(r.skills) ? r.skills : [],
+    branch: r.branch || '',
+    year: r.year || '',
+    github: r.github || '',
+    linkedin: r.linkedin || '',
+    portfolio: r.portfolio || ''
+  };
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[char]));
+}
+
+async function sbTable(table, columns = '*') {
+  if (!_sb) return [];
+  const { data, error } = await _sb.from(table).select(columns);
+  if (error) {
+    console.warn(`[Supabase] ${table}:`, error.message);
+    return [];
+  }
+  return data || [];
+}
 
 // Clear any stale localStorage cache
 ['isep_photos','isep_certificates','isep_thoughts'].forEach(k => localStorage.removeItem(k));
@@ -105,6 +136,8 @@ class IsepArchiveApp {
     this.photos = [];
     this.certificates = [];
     this.thoughts = [];
+    this.members = [];
+    this.profileSlug = null;
 
     this.init();
   }
@@ -119,6 +152,7 @@ class IsepArchiveApp {
     this.initCertificates();
     this.initThoughtsWall();
     this.initAdminPortal();
+    this.initMemberFeatures();
     if (_sb) {
       _sb.auth.getSession().then(async ({ data }) => {
         if (data?.session) {
@@ -162,6 +196,7 @@ class IsepArchiveApp {
       this.photos = photos;
       this.certificates = certs;
       this.thoughts = thoughts;
+      this.members = (await sbTable('members')).map(mapMember);
     } catch(e) {
       console.error('[Supabase] Load error:', e);
     }
@@ -187,8 +222,15 @@ class IsepArchiveApp {
   // --- Router & History Navigation ---
   initRouter() {
     const handleRoute = () => {
+      const memberMatch = window.location.pathname.match(/^\/members\/([^/]+)\/?$/i);
+      if (memberMatch) {
+        this.profileSlug = decodeURIComponent(memberMatch[1]).toLowerCase();
+        this.navigateTo('member-profile', false);
+        this.renderMemberProfile(this.profileSlug);
+        return;
+      }
       const hash = window.location.hash.replace('#', '') || 'home';
-      const valid = ['home', 'gallery', 'certificates', 'thoughts-wall', 'admin-portal'];
+      const valid = ['home', 'gallery', 'certificates', 'thoughts-wall', 'members', 'dashboard', 'member-profile', 'admin-portal'];
       this.navigateTo(valid.includes(hash) ? hash : 'home', false);
     };
 
@@ -244,9 +286,123 @@ class IsepArchiveApp {
     // Refresh dynamic views on route enter
     if (route === 'admin-portal') {
       this.renderAdminView();
+    } else if (route === 'members') {
+      this.renderMembers();
+    } else if (route === 'dashboard') {
+      this.renderMemberDashboard();
+    } else if (route === 'member-profile') {
+      this.renderMemberProfile(this.profileSlug);
     } else if (route === 'home') {
       this.updateHomeStats();
     }
+  }
+
+  initMemberFeatures() {
+      document.addEventListener('click', (event) => {
+        const profileLink = event.target.closest('[data-member-slug]');
+        if (!profileLink) return;
+        event.preventDefault();
+        const slug = profileLink.getAttribute('data-member-slug');
+        history.pushState({}, '', `/members/${encodeURIComponent(slug)}`);
+        this.profileSlug = slug;
+        this.navigateTo('member-profile', false);
+        this.renderMemberProfile(slug);
+      });
+      window.addEventListener('popstate', () => {
+        const match = window.location.pathname.match(/^\/members\/([^/]+)\/?$/i);
+        if (match) {
+          this.profileSlug = decodeURIComponent(match[1]).toLowerCase();
+          this.navigateTo('member-profile', false);
+          this.renderMemberProfile(this.profileSlug);
+        }
+      });
+    }
+
+  async renderMembers() {
+          const container = document.getElementById('members-grid');
+          if (!container) return;
+          if (!this.members.length) {
+            this.members = (await sbTable('members')).map(mapMember);
+          }
+          container.innerHTML = this.members.length ? this.members.map((member) => `
+            <article class="bg-surface-container rounded-xl border border-outline-variant/20 p-space-md flex flex-col gap-space-sm">
+              <div class="flex items-center gap-space-sm">
+                ${member.photo ? `<img src="${escapeHtml(member.photo)}" alt="${escapeHtml(member.fullName)}" class="w-14 h-14 rounded-full object-cover border border-primary/30"/>` : `<div class="w-14 h-14 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary text-xl font-bold">${escapeHtml((member.fullName || 'M').charAt(0))}</div>`}
+                <div><h2 class="font-serif text-lg text-on-surface font-bold">${escapeHtml(member.fullName)}</h2><p class="text-xs text-on-surface-variant">${escapeHtml([member.branch, member.year].filter(Boolean).join(' • '))}</p></div>
+              </div>
+              <p class="text-sm text-on-surface-variant line-clamp-3">${escapeHtml(member.bio || 'ISEP member portfolio')}</p>
+              <div class="flex flex-wrap gap-1">${member.skills.slice(0, 4).map((skill) => `<span class="text-[11px] px-2 py-1 rounded-full bg-primary/10 text-primary">${escapeHtml(skill)}</span>`).join('')}</div>
+              <a href="/members/${encodeURIComponent(member.slug)}" data-member-slug="${escapeHtml(member.slug)}" class="mt-auto text-sm text-primary font-semibold hover:underline">View portfolio →</a>
+            </article>
+          `).join('') : '<div class="col-span-full rounded-xl border border-outline-variant/20 bg-surface-container p-space-lg text-center text-on-surface-variant">No approved member profiles are available yet.</div>';
+        }
+
+        async renderMemberProfile(slug) {
+          const container = document.getElementById('member-profile');
+          if (!container || !slug) return;
+          container.innerHTML = '<div class="py-space-xl text-center text-on-surface-variant">Loading member portfolio…</div>';
+          if (!this.members.length) this.members = (await sbTable('members')).map(mapMember);
+          const member = this.members.find((item) => item.slug === slug);
+          if (!member) {
+            container.innerHTML = '<div class="rounded-xl border border-outline-variant/20 bg-surface-container p-space-lg text-center text-on-surface-variant">Member profile not found.</div>';
+            return;
+          }
+          const [projects, certificates, achievements, activities, hackathons] = await Promise.all([
+            sbFetch('member_projects', { member_id: member._id }),
+            sbFetch('member_certificates', { member_id: member._id }),
+            sbFetch('member_achievements', { member_id: member._id }),
+            sbFetch('member_activities', { member_id: member._id }),
+            sbFetch('member_hackathons', { member_id: member._id })
+          ]);
+          const section = (title, rows, renderer) => rows.length ? `<section class="bg-surface-container rounded-xl border border-outline-variant/20 p-space-md"><h2 class="font-serif text-2xl text-on-surface font-bold mb-space-sm">${title}</h2><div class="grid gap-space-sm md:grid-cols-2">${rows.map(renderer).join('')}</div></section>` : '';
+          container.innerHTML = `
+            <a href="/#members" class="text-sm text-primary hover:underline">← Back to members</a>
+            <section class="mt-space-md bg-surface-container rounded-2xl border border-primary/20 p-space-lg flex flex-col sm:flex-row gap-space-md items-start">
+              ${member.photo ? `<img src="${escapeHtml(member.photo)}" alt="${escapeHtml(member.fullName)}" class="w-28 h-28 rounded-2xl object-cover border border-primary/30"/>` : `<div class="w-28 h-28 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary text-4xl font-bold">${escapeHtml((member.fullName || 'M').charAt(0))}</div>`}
+              <div><span class="text-xs text-primary uppercase tracking-widest">ISEP Member Portfolio</span><h1 class="font-serif text-4xl text-on-surface font-bold">${escapeHtml(member.fullName)}</h1><p class="text-on-surface-variant mt-1">${escapeHtml([member.branch, member.year].filter(Boolean).join(' • '))}</p><p class="text-on-surface-variant mt-space-sm max-w-2xl">${escapeHtml(member.bio || 'No biography added yet.')}</p><div class="flex flex-wrap gap-2 mt-space-sm">${member.skills.map((skill) => `<span class="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs">${escapeHtml(skill)}</span>`).join('')}</div></div>
+            </section>
+            ${section('Projects', projects, (row) => `<article class="rounded-lg bg-surface-container-high p-space-sm"><h3 class="font-semibold text-on-surface">${escapeHtml(row.title || row.name)}</h3><p class="text-sm text-on-surface-variant mt-1">${escapeHtml(row.description || '')}</p>${row.project_url ? `<a class="text-xs text-primary hover:underline" href="${escapeHtml(row.project_url)}" target="_blank" rel="noreferrer">Open project</a>` : ''}</article>`)}
+            ${section('Certificates', certificates, (row) => `<article class="rounded-lg bg-surface-container-high p-space-sm"><h3 class="font-semibold text-on-surface">${escapeHtml(row.title || row.name)}</h3><p class="text-sm text-on-surface-variant">${escapeHtml(row.issuer || '')}</p>${row.file_url ? `<a class="text-xs text-primary hover:underline" href="${escapeHtml(row.file_url)}" target="_blank" rel="noreferrer">View certificate</a>` : ''}</article>`)}
+            ${section('Achievements', achievements, (row) => `<article class="rounded-lg bg-surface-container-high p-space-sm"><h3 class="font-semibold text-on-surface">${escapeHtml(row.title)}</h3><p class="text-sm text-on-surface-variant">${escapeHtml(row.description || '')}</p></article>`)}
+            ${section('ISEP Activities', activities, (row) => `<article class="rounded-lg bg-surface-container-high p-space-sm"><h3 class="font-semibold text-on-surface">${escapeHtml(row.title)}</h3><p class="text-sm text-on-surface-variant">${escapeHtml(row.description || '')}</p></article>`)}
+            ${section('Hackathons', hackathons, (row) => `<article class="rounded-lg bg-surface-container-high p-space-sm"><h3 class="font-semibold text-on-surface">${escapeHtml(row.title || row.name)}</h3><p class="text-sm text-on-surface-variant">${escapeHtml(row.result || row.description || '')}</p></article>`)}
+            <section class="bg-surface-container rounded-xl border border-outline-variant/20 p-space-md"><h2 class="font-serif text-2xl text-on-surface font-bold mb-space-sm">Social Links</h2><div class="flex flex-wrap gap-space-sm">${[['GitHub', member.github], ['LinkedIn', member.linkedin], ['Portfolio', member.portfolio]].filter(([, url]) => url).map(([label, url]) => `<a class="text-primary hover:underline" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${label} ↗</a>`).join('') || '<span class="text-sm text-on-surface-variant">No social links added yet.</span>'}</div></section>
+          `;
+        }
+
+        async renderMemberDashboard() {
+          const container = document.getElementById('member-dashboard');
+          if (!container) return;
+          const { data } = _sb ? await _sb.auth.getSession() : { data: {} };
+          if (!data?.session) {
+            container.innerHTML = '<div class="rounded-2xl border border-primary/20 bg-surface-container p-space-lg max-w-xl mx-auto"><h1 class="font-serif text-3xl text-on-surface font-bold">Member Dashboard</h1><p class="text-on-surface-variant mt-space-sm">Sign in with your ISEP member account to manage your profile and portfolio.</p><form id="member-login-form" class="space-y-space-sm mt-space-md"><input id="member-login-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-login-password" type="password" required placeholder="Password" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded bg-primary text-on-primary font-semibold">Sign in</button><p id="member-login-message" class="text-sm text-on-surface-variant"></p></form></div>';
+            document.getElementById('member-login-form')?.addEventListener('submit', async (event) => {
+              event.preventDefault();
+              const message = document.getElementById('member-login-message');
+              const { error } = await _sb.auth.signInWithPassword({ email: document.getElementById('member-login-email').value.trim(), password: document.getElementById('member-login-password').value });
+              if (error) { message.textContent = error.message; return; }
+              this.renderMemberDashboard();
+            });
+            return;
+          }
+          const user = data.session.user;
+          const { data: member } = await _sb.from('members').select('*').eq('auth_user_id', user.id).maybeSingle();
+          if (!member) {
+            container.innerHTML = '<div class="rounded-xl border border-primary/20 bg-surface-container p-space-lg text-on-surface-variant">Your account is authenticated, but an approved member profile has not been linked yet. Ask an administrator to add your profile.</div>';
+            return;
+          }
+          const profile = mapMember(member);
+          const completionFields = [profile.fullName, profile.bio, profile.photo, profile.skills.length, profile.github || profile.linkedin || profile.portfolio];
+          const completion = Math.round((completionFields.filter(Boolean).length / completionFields.length) * 100);
+          container.innerHTML = `<div class="space-y-space-lg"><div><span class="text-xs text-primary uppercase tracking-widest">Member Workspace</span><h1 class="font-serif text-4xl text-on-surface font-bold">Welcome, ${escapeHtml(profile.fullName)}</h1><p class="text-on-surface-variant mt-1">Profile completion: ${completion}%</p></div><form id="member-profile-form" class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg space-y-space-sm"><input name="full_name" value="${escapeHtml(member.full_name || '')}" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><textarea name="bio" rows="4" placeholder="About you" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface">${escapeHtml(member.bio || '')}</textarea><input name="skills" value="${escapeHtml(profile.skills.join(', '))}" placeholder="Skills, comma separated" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_url" type="url" value="${escapeHtml(member.photo_url || '')}" placeholder="Profile photo URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><div class="flex gap-space-sm"><input name="github" type="url" value="${escapeHtml(member.github || '')}" placeholder="GitHub URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="linkedin" type="url" value="${escapeHtml(member.linkedin || '')}" placeholder="LinkedIn URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/></div><button class="px-space-lg py-2.5 rounded bg-primary text-on-primary font-semibold">Save profile</button><p id="member-save-message" class="text-sm text-on-surface-variant"></p></form><a data-member-slug="${escapeHtml(profile.slug)}" href="/members/${encodeURIComponent(profile.slug)}" class="inline-flex px-space-lg py-2.5 rounded border border-primary/30 text-primary">View public portfolio →</a></div>`;
+          document.getElementById('member-profile-form')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const changes = { full_name: form.get('full_name'), bio: form.get('bio'), skills: String(form.get('skills') || '').split(',').map((item) => item.trim()).filter(Boolean), photo_url: form.get('photo_url'), github: form.get('github'), linkedin: form.get('linkedin') };
+            const { error } = await _sb.from('members').update(changes).eq('auth_user_id', user.id);
+            document.getElementById('member-save-message').textContent = error ? error.message : 'Profile saved.';
+            if (!error) { this.members = []; this.renderMemberDashboard(); }
+          });
   }
 
   // --- View-Only Protection Feature (Security Requirement) ---
@@ -824,7 +980,9 @@ class IsepArchiveApp {
           name,
           message,
           rating: this.selectedRating || 5,
-          status: 'pending'
+          status: 'pending',
+          author_id: (await _sb?.auth.getUser())?.data?.user?.id || null,
+          profile_photo: ''
         });
 
         pinForm.reset();
@@ -886,7 +1044,7 @@ class IsepArchiveApp {
 
           <div class="flex items-center justify-between pt-space-sm border-t ${isEven ? 'border-outline-variant/20' : 'border-on-secondary-fixed/20'}">
             <div class="flex flex-col">
-              <span class="font-headline-sm text-[16px] ${authorColor}">${t.name}</span>
+            <div class="flex items-center gap-2">${t.photo ? `<img src="${escapeHtml(t.photo)}" alt="" class="w-7 h-7 rounded-full object-cover"/>` : ''}<span class="font-headline-sm text-[16px] ${authorColor}">${escapeHtml(t.name)}</span></div>
               <span class="font-body-sm text-body-sm ${roleColor}">Verified Visitor / Scholar</span>
             </div>
             <span class="material-symbols-outlined text-primary/70 text-[20px]">format_quote</span>
@@ -1381,6 +1539,10 @@ class IsepArchiveApp {
         document.getElementById('admin-count-photos').textContent = this.photos.length;
         document.getElementById('admin-count-certs').textContent = this.certificates.length;
         document.getElementById('admin-count-pending').textContent = pendingCount;
+        const membersCount = document.getElementById('admin-count-members');
+        if (membersCount) {
+          sbTable('members').then(rows => { membersCount.textContent = rows.filter(row => row.approved).length; });
+        }
         this.renderAdminThoughtsTable();
       });
 

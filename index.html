@@ -146,6 +146,8 @@
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="gallery" href="#gallery">Photo Gallery</a>
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="certificates" href="#certificates">Certifications</a>
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="thoughts-wall" href="#thoughts-wall">Thoughts Wall</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="members" href="#members">Members</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="dashboard" href="#dashboard">Dashboard</a>
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="admin-portal" href="#admin-portal">Admin Portal</a>
       </nav>
 
@@ -249,7 +251,7 @@
                     <img class="w-full h-full object-cover object-center contrast-105 pointer-events-none select-none" alt="Team Activities Sprint" src="assets/images/photo-card-2.jpg" draggable="false"/>
                     <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/30 to-transparent"></div>
                     <div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
-                      <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary font-mono">Album: Team Activities</span>
+                      <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary font-mono">Album: Fun Memories</span>
                       <span class="font-body-sm text-body-sm text-on-surface">Colloquium Sprints</span>
                     </div>
                   </div>
@@ -261,7 +263,7 @@
                     <img class="w-full h-full object-cover object-center contrast-105 pointer-events-none select-none" alt="Technical Sessions" src="assets/images/photo-card-3.jpg" draggable="false"/>
                     <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/30 to-transparent"></div>
                     <div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
-                      <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary font-mono">Album: Sessions</span>
+                      <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary font-mono">Album: Classroom Activities</span>
                       <span class="font-body-sm text-body-sm text-on-surface">Hands-on Workshops</span>
                     </div>
                   </div>
@@ -320,7 +322,7 @@
               </div>
               <span id="home-stat-photos" class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">0</span>
               <span class="font-headline-sm text-headline-sm text-on-surface mt-1 font-serif">Curated Photos</span>
-              <p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Across Events, Sessions, and Team Activities</p>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Across the seven official ISEP memory categories</p>
             </div>
 
             <div class="rounded-xl bg-surface-container p-space-lg flex flex-col items-center text-center shadow-md border border-outline-variant/15">
@@ -441,7 +443,7 @@
                   <div>
                     <h3 class="font-headline-md text-headline-md text-on-surface font-serif font-bold">Photo Gallery</h3>
                     <p class="font-body-sm text-body-sm text-on-surface-variant mt-2">
-                      Organized albums covering Events, Technical Sessions, and Team Activities with full-screen view-only viewer.
+                      Organized albums covering the seven official ISEP memory categories with full-screen view-only viewer.
                     </p>
                   </div>
                   <a href="#gallery" data-path="gallery" class="inline-flex items-center gap-1 text-primary text-sm font-semibold hover:underline mt-4">
@@ -531,24 +533,19 @@
             </div>
           </div>
 
-          <!-- Album Filters as specified in section 4.1: Events, Sessions, Team Activities -->
+          <!-- Album Filters -->
           <div class="flex items-center gap-space-xs overflow-x-auto pt-space-md no-scrollbar">
             <button class="gallery-filter-btn active-gallery-filter flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md uppercase tracking-wider shadow-sm transition-all flex-shrink-0 cursor-pointer" data-album="all">
               <span class="w-2 h-2 rounded-full bg-on-primary-container"></span>
               <span>All Albums</span>
             </button>
-            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Events">
-              <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
-              <span>Events</span>
-            </button>
-            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Sessions">
-              <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
-              <span>Sessions</span>
-            </button>
-            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Team Activities">
-              <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
-              <span>Team Activities</span>
-            </button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="News"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>News</span></button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Classroom Activities"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>Classroom Activities</span></button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Classes"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>Classes</span></button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Self-Study Sessions"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>Self-Study Sessions</span></button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Fun Memories"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>Fun Memories</span></button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Hackathons"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>Hackathons</span></button>
+            <button class="gallery-filter-btn flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer" data-album="Meetings / Events"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span><span>Meetings / Events</span></button>
           </div>
         </header>
 
@@ -691,7 +688,33 @@
       </div>
     </section>
 
-    <!-- ================= VIEW 6: ADMIN PORTAL ================= -->
+    <!-- ================= VIEW 6: MEMBER DIRECTORY ================= -->
+    <section id="view-members" class="view-section w-full">
+      <div class="w-full px-gutter lg:px-margin py-8 lg:py-10">
+        <div class="max-w-3xl mb-space-lg">
+          <span class="font-label-sm text-primary uppercase tracking-widest font-semibold">ISEP Community</span>
+          <h1 class="font-headline-xl text-on-surface font-serif font-bold mt-1">Member Directory</h1>
+          <p class="text-on-surface-variant mt-2">Explore approved member portfolios and the people behind the ISEP archive.</p>
+        </div>
+        <div id="members-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-md"></div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 7: MEMBER DASHBOARD ================= -->
+    <section id="view-dashboard" class="view-section w-full">
+      <div class="w-full max-w-5xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="member-dashboard"></div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 8: PUBLIC MEMBER PROFILE ================= -->
+    <section id="view-member-profile" class="view-section w-full">
+      <div class="w-full max-w-5xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="member-profile"></div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 9: ADMIN PORTAL ================= -->
     <section id="view-admin-portal" class="view-section admin-page w-full">
       <div class="w-full px-gutter lg:px-margin flex flex-col gap-space-lg pt-8 lg:pt-10">
         
@@ -822,6 +845,11 @@
               </div>
               <span class="text-xs text-outline">Awaiting approval</span>
             </div>
+            <div class="bg-surface-container p-space-md rounded-xl border border-outline-variant/15 flex flex-col justify-between">
+              <span class="font-label-sm text-xs uppercase text-on-surface-variant font-semibold">Member Profiles</span>
+              <span id="admin-count-members" class="font-headline-xl text-headline-xl text-primary font-serif font-bold my-1">0</span>
+              <span class="text-xs text-outline">Approved cohort members</span>
+            </div>
           </div>
 
           <!-- Management Tabs Bar -->
@@ -869,7 +897,7 @@
               <div class="flex items-center justify-between mb-space-md">
                 <div>
                   <h2 class="font-headline-sm text-headline-sm text-on-surface font-serif font-bold">Photo Management</h2>
-                  <p class="font-body-sm text-body-sm text-on-surface-variant">Upload photos, assign albums (Events, Sessions, Team Activities), and delete photos.</p>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Upload photos, assign one of the seven official categories, and delete photos.</p>
                 </div>
                 <button onclick="document.getElementById('admin-upload-photo-modal').classList.remove('hidden')" class="flex items-center gap-1.5 px-space-md py-space-xs rounded bg-primary text-on-primary font-semibold text-sm hover:bg-primary-fixed transition-all shadow-md cursor-pointer">
                   <span class="material-symbols-outlined text-[16px]">add_a_photo</span>
@@ -1221,9 +1249,13 @@
           <div>
             <label for="new-photo-album" class="block font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Album Assignment *</label>
             <select id="new-photo-album" class="w-full px-space-md py-2.5 rounded bg-surface-container text-on-surface border border-outline-variant/30 focus:border-primary outline-none text-sm cursor-pointer">
-              <option value="Events">Events</option>
-              <option value="Sessions">Sessions</option>
-              <option value="Team Activities">Team Activities</option>
+              <option value="News">News</option>
+              <option value="Classroom Activities">Classroom Activities</option>
+              <option value="Classes">Classes</option>
+              <option value="Self-Study Sessions">Self-Study Sessions</option>
+              <option value="Fun Memories">Fun Memories</option>
+              <option value="Hackathons">Hackathons</option>
+              <option value="Meetings / Events">Meetings / Events</option>
             </select>
           </div>
           <div>
