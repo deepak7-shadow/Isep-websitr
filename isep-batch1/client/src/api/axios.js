@@ -78,4 +78,11 @@ export const authApi = {
   login: (credentials) => api.post('/auth/login', credentials)
 };
 
+export const memoriesApi = {
+  getAll: () => api.get('/memories'),
+  create: (formData) => api.post('/memories', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, formData) => api.put(`/memories/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id) => api.delete(`/memories/${id}`)
+};
+
 export default api;

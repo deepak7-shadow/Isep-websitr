@@ -11,6 +11,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
     { id: 'tcs-meetings', label: 'TCS Meetings' },
     { id: 'thoughts', label: 'Thoughts Wall' },
     { id: 'activities', label: 'Activities' },
+    { id: 'memories', label: 'Fun & Memories' },
     { id: 'admin', label: 'Admin Portal' }
   ];
 

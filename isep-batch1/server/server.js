@@ -48,6 +48,9 @@ app.use('/api/mock-interviews', require('./routes/mockInterviews'));
 // M14 — Hackathons
 app.use('/api/hackathons', require('./routes/hackathons'));
 
+// M13 — Fun / Memories
+app.use('/api/memories', require('./routes/memories'));
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('[API Error]', err.stack);

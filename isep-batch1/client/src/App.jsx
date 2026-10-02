@@ -10,12 +10,22 @@ import Admin from './pages/Admin';
 import Activities from './pages/Activities';
 import MockInterviews from './pages/MockInterviews';
 import Hackathons from './pages/Hackathons';
+import Memories from './pages/Memories';
 import TCSMeetings from './pages/TCSMeetings';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [selectedCert, setSelectedCert] = useState(null);
+
+  // Admin view is full-screen — rendered outside the public Navbar/Footer
+  if (activeTab === 'admin') {
+    return (
+      <div className="selection:bg-[#f3be65]/30 selection:text-[#f3be65]">
+        <Admin onSwitchToPublic={() => setActiveTab('home')} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#131316] text-[#e4e1e5] flex flex-col justify-between selection:bg-[#f3be65]/30 selection:text-[#f3be65]">
@@ -39,8 +49,8 @@ export default function App() {
           {activeTab === 'mock-interviews' && <MockInterviews />}
           {activeTab === 'thoughts' && <Thoughts />}
           {activeTab === 'activities' && <Activities />}
-          {activeTab === 'admin' && <Admin />}
-          {activeTab === 'tcs-meetings' && <TCSMeetings />}          
+          {activeTab === 'memories' && <Memories />}
+          {activeTab === 'tcs-meetings' && <TCSMeetings />}
         </main>
       </div>
 

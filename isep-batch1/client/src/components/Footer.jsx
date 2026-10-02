@@ -18,6 +18,7 @@ export default function Footer({ setActiveTab }) {
           <button onClick={() => setActiveTab('gallery')} className="hover:text-[#f3be65] transition-colors">Gallery</button>
           <button onClick={() => setActiveTab('certificates')} className="hover:text-[#f3be65] transition-colors">Certifications</button>
           <button onClick={() => setActiveTab('achievements')} className="hover:text-[#f3be65] transition-colors">Achievements</button>
+          <button onClick={() => setActiveTab('memories')} className="hover:text-[#f3be65] transition-colors">Memories</button>
           <button onClick={() => setActiveTab('thoughts')} className="hover:text-[#f3be65] transition-colors">Thoughts Wall</button>
           <button onClick={() => setActiveTab('admin')} className="hover:text-[#f3be65] transition-colors text-[#f3be65]/70">Admin Access</button>
         </div>
