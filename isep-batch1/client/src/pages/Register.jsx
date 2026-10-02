@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
@@ -32,10 +31,23 @@ export default function Register() {
   };
 
   const validateForm = () => {
-    const { fullName, email, password, confirmPassword, branch, year } =
-      formData;
+    const {
+      fullName,
+      email,
+      password,
+      confirmPassword,
+      branch,
+      year,
+    } = formData;
 
-    if (!fullName.trim() || !email.trim() || !password || !confirmPassword || !branch || !year) {
+    if (
+      !fullName.trim() ||
+      !email.trim() ||
+      !password ||
+      !confirmPassword ||
+      !branch ||
+      !year
+    ) {
       return 'Please fill in all required fields.';
     }
 
@@ -101,6 +113,10 @@ export default function Register() {
     }
   };
 
+  const goToLogin = () => {
+    window.location.href = '/login';
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0b0b0d] text-[#e4e1e5]">
       {/* Ambient background */}
@@ -108,7 +124,8 @@ export default function Register() {
         <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#f3be65]/10 blur-3xl" />
         <div className="absolute -bottom-40 -right-20 h-[28rem] w-[28rem] rounded-full bg-[#8b6f3d]/10 blur-3xl" />
 
-        <div className="absolute inset-0 opacity-[0.035]"
+        <div
+          className="absolute inset-0 opacity-[0.035]"
           style={{
             backgroundImage:
               'linear-gradient(rgba(243,190,101,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(243,190,101,0.7) 1px, transparent 1px)',
@@ -119,7 +136,7 @@ export default function Register() {
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl items-center justify-center px-5 py-12">
         <div className="grid w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025] shadow-2xl backdrop-blur-xl lg:grid-cols-[0.9fr_1.1fr]">
-
+          
           {/* Brand panel */}
           <section className="relative hidden min-h-[700px] overflow-hidden border-r border-white/10 bg-[#111114] p-12 lg:flex lg:flex-col lg:justify-between">
             <div>
@@ -178,6 +195,7 @@ export default function Register() {
           {/* Form panel */}
           <section className="flex items-center justify-center p-6 sm:p-10 lg:p-14">
             <div className="w-full max-w-xl">
+
               <div className="mb-8">
                 <p className="mb-2 text-xs font-mono uppercase tracking-[0.3em] text-[#f3be65]">
                   Member Registration
@@ -260,11 +278,21 @@ export default function Register() {
                       className="w-full rounded-xl border border-white/10 bg-[#151518] px-4 py-3.5 text-sm text-white outline-none transition-all focus:border-[#f3be65]/60 focus:ring-2 focus:ring-[#f3be65]/10"
                     >
                       <option value="">Select branch</option>
-                      <option value="CSE">Computer Science & Engineering</option>
-                      <option value="CSE (Data Science)">CSE (Data Science)</option>
-                      <option value="ISE">Information Science & Engineering</option>
-                      <option value="ECE">Electronics & Communication Engineering</option>
-                      <option value="EEE">Electrical & Electronics Engineering</option>
+                      <option value="CSE">
+                        Computer Science & Engineering
+                      </option>
+                      <option value="CSE (Data Science)">
+                        CSE (Data Science)
+                      </option>
+                      <option value="ISE">
+                        Information Science & Engineering
+                      </option>
+                      <option value="ECE">
+                        Electronics & Communication Engineering
+                      </option>
+                      <option value="EEE">
+                        Electrical & Electronics Engineering
+                      </option>
                       <option value="ME">Mechanical Engineering</option>
                       <option value="Other">Other</option>
                     </select>
@@ -279,7 +307,7 @@ export default function Register() {
                       name="year"
                       value={formData.year}
                       onChange={handleChange}
-                      className="w-full rounded-xl border border-white/10 bg-[#151518] px-4 py-3.5 text-sm text-white outline-none transition-all focus:border-[#f3be65]/60 focus:ring-2 focus:ring-[#f3be65]/10"
+                      className="w-full rounded-xl border border-white/10 bg-[#151518] px-4 py-3.5 text-sm text-white outline-none transition-all focus:border-[#f3be65]/60 focus:ring-2 focus:ring-[#f3be65]/[0.035] focus:ring-2 focus:ring-[#f3be65]/10"
                     >
                       <option value="">Select year</option>
                       <option value="1st Year">1st Year</option>
@@ -308,7 +336,9 @@ export default function Register() {
 
                     <button
                       type="button"
-                      onClick={() => setShowPassword((value) => !value)}
+                      onClick={() =>
+                        setShowPassword((value) => !value)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#f3be65]/70 transition hover:text-[#f3be65]"
                     >
                       {showPassword ? 'HIDE' : 'SHOW'}
@@ -351,19 +381,22 @@ export default function Register() {
                   className="group relative mt-2 flex w-full items-center justify-center overflow-hidden rounded-xl bg-[#f3be65] px-5 py-4 text-sm font-bold tracking-wide text-[#111114] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#ffd98f] hover:shadow-[0_12px_35px_rgba(243,190,101,0.18)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <span className="relative z-10">
-                    {loading ? 'Submitting Registration...' : 'Submit Registration'}
+                    {loading
+                      ? 'Submitting Registration...'
+                      : 'Submit Registration'}
                   </span>
                 </button>
               </form>
 
               <div className="mt-7 text-center text-sm text-[#77757c]">
                 Already have an account?{' '}
-                <Link
-                  to="/login"
+                <button
+                  type="button"
+                  onClick={goToLogin}
                   className="font-medium text-[#f3be65] transition hover:text-[#ffd98f]"
                 >
                   Sign in
-                </Link>
+                </button>
               </div>
 
               <p className="mt-8 text-center text-[10px] uppercase tracking-[0.2em] text-white/20">
