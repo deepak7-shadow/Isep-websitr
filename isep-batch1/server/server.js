@@ -25,7 +25,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Serve static uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Mount Routes
+app.use('/api/upload', require('./routes/upload'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/photos', require('./routes/photos'));
