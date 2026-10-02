@@ -9,6 +9,7 @@ import Thoughts from './pages/Thoughts';
 import Admin from './pages/Admin';
 import Activities from './pages/Activities';
 import MockInterviews from './pages/MockInterviews';
+import Hackathons from './pages/Hackathons';
 import TCSMeetings from './pages/TCSMeetings';
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
             <Certificates onInspectCert={setSelectedCert} />
           )}
           {activeTab === 'achievements' && <Achievements />}
+          {activeTab === 'hackathons' && <Hackathons />}
           {activeTab === 'mock-interviews' && <MockInterviews />}
           {activeTab === 'thoughts' && <Thoughts />}
           {activeTab === 'activities' && <Activities />}

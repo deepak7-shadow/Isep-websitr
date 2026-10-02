@@ -45,6 +45,9 @@ app.use('/api/tcs-meetings', require('./routes/tcsMeetings'));
 // M15 — Mock Interviews
 app.use('/api/mock-interviews', require('./routes/mockInterviews'));
 
+// M14 — Hackathons
+app.use('/api/hackathons', require('./routes/hackathons'));
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('[API Error]', err.stack);

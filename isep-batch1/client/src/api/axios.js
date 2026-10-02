@@ -66,6 +66,14 @@ export const mockInterviewsApi = {
   delete: (id) => api.delete(`/mock-interviews/${id}`)
 };
 
+export const hackathonsApi = {
+  getAll: () => api.get('/hackathons'),
+  getById: (id) => api.get(`/hackathons/${id}`),
+  create: (data) => api.post('/hackathons', data),
+  update: (id, data) => api.put(`/hackathons/${id}`, data),
+  delete: (id) => api.delete(`/hackathons/${id}`)
+};
+
 export const authApi = {
   login: (credentials) => api.post('/auth/login', credentials)
 };
