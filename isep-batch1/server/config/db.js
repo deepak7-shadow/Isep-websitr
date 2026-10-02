@@ -2,14 +2,19 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/isep_batch1_archive';
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log(`[Database] MongoDB Connected successfully to: ${mongoUri}`);
+    const mongoUri = process.env.MONGO_URI;
+
+    if (!mongoUri) {
+      throw new Error('MONGO_URI is missing from .env');
+    }
+
+    await mongoose.connect(mongoUri);
+
+    console.log('[Database] MongoDB Connected successfully');
   } catch (error) {
-    console.warn(`[Database] Warning: MongoDB connection error (${error.message}). Running in mock/standalone mode.`);
+    console.warn(
+      `[Database] Warning: MongoDB connection error (${error.message}).`
+    );
   }
 };
 
