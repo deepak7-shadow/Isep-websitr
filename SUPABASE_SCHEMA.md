@@ -10,6 +10,9 @@ create extension if not exists pgcrypto;
 
 alter table public.admin_users add column if not exists role text not null default 'admin';
 alter table public.admin_users add column if not exists full_name text;
+alter table public.admin_users add column if not exists description text default '';
+alter table public.admin_users add column if not exists image_url text default '';
+alter table public.admin_users add column if not exists is_main_admin boolean not null default false;
 alter table public.thoughts add column if not exists author_id uuid references auth.users(id) on delete set null;
 alter table public.thoughts add column if not exists profile_photo text default '';
 
@@ -50,9 +53,33 @@ end $$;
 
 create or replace function public.is_approved_admin()
 returns boolean language sql stable security definer set search_path = public
-as $$ select exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.is_approved = true); $$;
+as $$ select exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.is_approved = true and a.role in ('head','admin','mentor')); $$;
+
+create or replace function public.handle_new_member()
+returns trigger language plpgsql security definer set search_path = public
+as $$
+declare member_name text := coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1));
+begin
+  if new.raw_user_meta_data->>'portal_role' = 'member' then
+    insert into public.members (auth_user_id, email, full_name, slug, role, approval_status, is_approved, approved)
+    values (new.id, new.email, member_name, regexp_replace(lower(member_name), '[^a-z0-9]+', '-', 'g') || '-' || left(new.id::text, 8), 'member', 'pending', false, false)
+    on conflict (auth_user_id) do nothing;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists on_auth_user_created_member on auth.users;
+create trigger on_auth_user_created_member after insert on auth.users
+for each row execute function public.handle_new_member();
 
 alter table public.members enable row level security;
+alter table public.admin_users enable row level security;
+drop policy if exists "approved heads are public" on public.admin_users;
+drop policy if exists "users view own admin record" on public.admin_users;
+drop policy if exists "approved admins view admin records" on public.admin_users;
+create policy "approved heads are public" on public.admin_users for select using (role in ('head','mentor') and is_approved = true);
+create policy "users view own admin record" on public.admin_users for select using (auth.uid() = user_id);
+create policy "approved admins view admin records" on public.admin_users for select using (public.is_approved_admin());
 drop policy if exists "approved members are public" on public.members;
 drop policy if exists "members update own profile" on public.members;
 drop policy if exists "members view own registration" on public.members;
@@ -100,9 +127,9 @@ browser uses only the public anon key; never put a service-role key in
 Create/approve the two ISEP Head records after their Auth accounts exist:
 
 ```sql
-update public.admin_users set role = 'head', full_name = 'Ganesh Mani Bhaiya', is_approved = true
+update public.admin_users set role = 'mentor', is_main_admin = true, full_name = 'Ganesh Mani Bhaiya', is_approved = true
 where lower(email) = lower('GANESH_AUTH_EMAIL');
-update public.admin_users set role = 'head', full_name = 'Amrutha Didi', is_approved = true
+update public.admin_users set role = 'mentor', is_main_admin = true, full_name = 'Amrutha Didi', is_approved = true
 where lower(email) = lower('AMRUTHA_AUTH_EMAIL');
 ```
 
