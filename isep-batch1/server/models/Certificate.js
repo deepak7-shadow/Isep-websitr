@@ -1,11 +1,36 @@
 const mongoose = require('mongoose');
 
 const CertificateSchema = new mongoose.Schema({
-  title: { type: String, required: true, trim: true },
-  recipientName: { type: String, required: true, trim: true },
-  issueDate: { type: Date, default: Date.now },
-  fileUrl: { type: String, required: true },
-  category: { type: String, default: 'Completion' }
-});
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  certificateName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  issuingOrganization: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  },
+  credentialLink: {
+    type: String,
+    default: ''
+  },
+  fileUrl: {
+    type: String,
+    default: ''
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model('Certificate', CertificateSchema);

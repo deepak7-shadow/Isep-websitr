@@ -27,6 +27,7 @@ app.get('/api/health', (req, res) => {
 
 // Mount Routes according to Section 8
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/photos', require('./routes/photos'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/achievements', require('./routes/achievements'));
