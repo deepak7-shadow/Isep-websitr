@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PendingApprovals from './PendingApprovals';
 import { authApi, photosApi, certsApi, achievementsApi, thoughtsApi } from '../api/axios';
 
 export default function Admin() {
@@ -243,6 +244,16 @@ export default function Admin() {
           )}
         </button>
         <button
+  onClick={() => setActiveAdminTab('pendingApprovals')}
+  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+    activeAdminTab === 'pendingApprovals'
+      ? 'bg-[#f3be65] text-[#131316] font-semibold'
+      : 'text-white/70 hover:bg-white/10'
+  }`}
+>
+  Pending Approvals
+</button>
+        <button
           onClick={() => setActiveAdminTab('upload')}
           className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
             activeAdminTab === 'upload' ? 'bg-[#f3be65] text-[#131316] font-semibold' : 'text-[#a3a1a8] hover:text-[#e4e1e5]'
@@ -339,6 +350,10 @@ export default function Admin() {
           </div>
         </div>
       )}
+      {/* Tab: Pending Approvals */}
+{activeAdminTab === 'pendingApprovals' && (
+  <PendingApprovals />
+)}
 
       {/* Tab: Add Records */}
       {activeAdminTab === 'upload' && (
