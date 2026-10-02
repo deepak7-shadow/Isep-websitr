@@ -103,3 +103,27 @@ stored in Supabase; the required tables and row-level security policies are in
 member accounts. Members can update only the profile linked to their Supabase
 Auth user, while approved profiles and portfolio records remain publicly
 readable.
+
+## Expanded ISEP workflows
+
+The root SPA also provides pending member registration, approval/rejection,
+member search, role-aware ISEP Head access, and the public sections
+`#activities`, `#memories`, `#hackathons`, `#mock-interviews`, and
+`#tcs-meetings`. Admin Portal tabs create records in Supabase as `pending`;
+an approved coordinator/head publishes them. Empty sections intentionally show
+an empty state until real ISEP records are entered.
+
+Run the complete, rerunnable migration in
+[`SUPABASE_SCHEMA.md`](SUPABASE_SCHEMA.md). It creates the five shared content
+tables, approval status fields, member-owned portfolio policies, admin policies,
+and the helper used by RLS. Create the existing `archive-media` public bucket
+and apply Storage policies before uploading images or documents. The browser
+requires only the project URL and public anon key already configured in
+`app.js`; never expose a service-role key.
+
+After creating the two Auth accounts, set their `admin_users.role` to `head`
+and approve them with the SQL shown in `SUPABASE_SCHEMA.md`. Link exactly the
+18 verified member Auth users through `members.auth_user_id` and approve them
+after review; the app does not seed invented names or events. Deploy the root
+branch with `vercel --prod` (or connect the repository in Vercel); `vercel.json`
+keeps the SPA fallback required by `/members/<slug>`.

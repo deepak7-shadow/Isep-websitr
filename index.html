@@ -148,6 +148,11 @@
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="thoughts-wall" href="#thoughts-wall">Thoughts Wall</a>
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="members" href="#members">Members</a>
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="dashboard" href="#dashboard">Dashboard</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="activities" href="#activities">Activities</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="memories" href="#memories">Memories</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="hackathons" href="#hackathons">Hackathons</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="mock-interviews" href="#mock-interviews">Mock Interviews</a>
+        <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="tcs-meetings" href="#tcs-meetings">TCS Meetings</a>
         <a class="px-space-md py-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm text-body-sm transition-all rounded-lg" data-path="admin-portal" href="#admin-portal">Admin Portal</a>
       </nav>
 
@@ -714,6 +719,32 @@
       </div>
     </section>
 
+    <section id="view-activities" class="view-section w-full">
+      <div class="w-full max-w-6xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="activities-content"></div>
+      </div>
+    </section>
+    <section id="view-memories" class="view-section w-full">
+      <div class="w-full max-w-6xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="memories-content"></div>
+      </div>
+    </section>
+    <section id="view-hackathons" class="view-section w-full">
+      <div class="w-full max-w-6xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="hackathons-content"></div>
+      </div>
+    </section>
+    <section id="view-mock-interviews" class="view-section w-full">
+      <div class="w-full max-w-6xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="mock-interviews-content"></div>
+      </div>
+    </section>
+    <section id="view-tcs-meetings" class="view-section w-full">
+      <div class="w-full max-w-6xl mx-auto px-gutter lg:px-margin py-8 lg:py-10">
+        <div id="tcs-meetings-content"></div>
+      </div>
+    </section>
+
     <!-- ================= VIEW 9: ADMIN PORTAL ================= -->
     <section id="view-admin-portal" class="view-section admin-page w-full">
       <div class="w-full px-gutter lg:px-margin flex flex-col gap-space-lg pt-8 lg:pt-10">
@@ -863,6 +894,24 @@
             <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="certificates">
               Manage Certificates
             </button>
+            <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="members">
+              Member Records
+            </button>
+            <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="activities">
+              Activities & Events
+            </button>
+            <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="memories">
+              Memories
+            </button>
+            <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="hackathons">
+              Hackathons
+            </button>
+            <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="mock-interviews">
+              Mock Interviews
+            </button>
+            <button class="admin-tab-btn px-space-md py-space-xs text-on-surface-variant hover:text-on-surface rounded-lg font-body-sm transition-all cursor-pointer" data-tab="tcs-meetings">
+              TCS Meetings
+            </button>
 
           </div>
 
@@ -963,6 +1012,33 @@
                 <div>
                   <h2 class="font-headline-sm text-headline-sm text-on-surface font-serif font-bold">Milestones & Achievements</h2>
                   <p class="font-body-sm text-body-sm text-on-surface-variant">Maintain key program events, awards, and project milestones.</p>
+                </div>
+
+                <div id="admin-panel-members" class="admin-tab-panel hidden space-y-space-md">
+                  <div class="bg-surface-container p-space-lg rounded-xl border border-outline-variant/20">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+                      <div><h2 class="font-headline-sm text-on-surface font-serif font-bold">Member Records & Approval</h2><p class="text-sm text-on-surface-variant">Review pending registrations, approve or reject profiles, and search the full cohort.</p></div>
+                      <input id="admin-member-search" type="search" placeholder="Search members…" class="px-space-md py-2 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface text-sm"/>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-outline-variant/30 text-outline text-xs uppercase tracking-wider"><th class="py-2.5 px-3">Name</th><th class="py-2.5 px-3">Status</th><th class="py-2.5 px-3">Role</th><th class="py-2.5 px-3 text-right">Actions</th></tr></thead><tbody id="admin-members-table-body" class="divide-y divide-outline-variant/15"></tbody></table></div>
+                  </div>
+                </div>
+
+                <div id="admin-panel-content" class="admin-tab-panel hidden space-y-space-md">
+                  <div class="bg-surface-container p-space-lg rounded-xl border border-outline-variant/20">
+                    <h2 id="admin-content-title" class="font-headline-sm text-on-surface font-serif font-bold">Content management</h2>
+                    <p id="admin-content-help" class="text-sm text-on-surface-variant mb-space-md">Create and manage records stored in Supabase.</p>
+                    <form id="admin-content-form" class="grid gap-space-sm md:grid-cols-2 mb-space-lg">
+                      <input id="admin-content-title-input" required placeholder="Title" class="px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/>
+                      <input id="admin-content-date" type="date" class="px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/>
+                      <textarea id="admin-content-description" placeholder="Description" rows="3" class="md:col-span-2 px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"></textarea>
+                      <input id="admin-content-extra" placeholder="Optional result, guest, interviewer, or participant" class="px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/>
+                      <input id="admin-content-file" type="file" accept="image/*,application/pdf" class="px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/>
+                      <button class="md:col-span-2 justify-self-start px-space-lg py-2.5 rounded bg-primary text-on-primary font-semibold">Save record</button>
+                      <p id="admin-content-message" class="md:col-span-2 text-sm text-on-surface-variant"></p>
+                    </form>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-outline-variant/30 text-outline text-xs uppercase tracking-wider"><th class="py-2.5 px-3">Title</th><th class="py-2.5 px-3">Date</th><th class="py-2.5 px-3">Description</th><th class="py-2.5 px-3 text-right">Actions</th></tr></thead><tbody id="admin-content-table-body" class="divide-y divide-outline-variant/15"></tbody></table></div>
+                  </div>
                 </div>
                 <button onclick="document.getElementById('admin-add-ach-modal').classList.remove('hidden')" class="flex items-center gap-1.5 px-space-md py-space-xs rounded bg-primary text-on-primary font-semibold text-sm hover:bg-primary-fixed transition-all shadow-md cursor-pointer">
                   <span class="material-symbols-outlined text-[16px]">add</span>
