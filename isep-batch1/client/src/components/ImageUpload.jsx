@@ -18,8 +18,7 @@ const ImageUpload = ({ value = [], onChange, multiple = true }) => {
       setUploading(true);
       setError(null);
 
-      // Adjust endpoint if your backend upload route is different (e.g., /api/upload)
-      const res = await axios.post('/api/upload', formData, {
+      const res = await axios.post('/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

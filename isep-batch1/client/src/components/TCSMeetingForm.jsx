@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../api/axios';
+import { tcsMeetingsApi } from '../api/axios';
 import ImageUpload from './ImageUpload';
 
 const TCSMeetingForm = ({ meeting, onSuccess }) => {
@@ -51,9 +51,9 @@ const TCSMeetingForm = ({ meeting, onSuccess }) => {
       };
 
       if (meeting && meeting._id) {
-        await axios.put(`/api/tcs-meetings/${meeting._id}`, payload);
+        await tcsMeetingsApi.update(meeting._id, payload);
       } else {
-        await axios.post('/api/tcs-meetings', payload);
+        await tcsMeetingsApi.create(payload);
       }
 
       if (onSuccess) onSuccess();

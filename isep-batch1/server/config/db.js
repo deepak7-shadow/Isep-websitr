@@ -8,12 +8,15 @@ const connectDB = async () => {
       throw new Error('MONGO_URI / MONGODB_URI is missing from .env');
     }
 
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 2000
+    });
 
     console.log('[Database] MongoDB Connected successfully');
   } catch (error) {
+    mongoose.set('bufferCommands', false);
     console.warn(
-      `[Database] Warning: MongoDB connection error (${error.message}).`
+      `[Database] Warning: MongoDB connection error (${error.message}). Using fallback demo data.`
     );
   }
 };

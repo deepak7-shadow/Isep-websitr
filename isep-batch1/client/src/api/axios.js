@@ -85,4 +85,12 @@ export const memoriesApi = {
   delete: (id) => api.delete(`/memories/${id}`)
 };
 
+export const tcsMeetingsApi = {
+  getAll: () => api.get('/tcs-meetings'),
+  getById: (id) => api.get(`/tcs-meetings/${id}`),
+  create: (data) => api.post('/tcs-meetings', data),
+  update: (id, data) => api.put(`/tcs-meetings/${id}`, data),
+  delete: (id) => api.delete(`/tcs-meetings/${id}`)
+};
+
 export default api;

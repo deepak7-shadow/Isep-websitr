@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from '../api/axios';
+import { tcsMeetingsApi } from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import TCSMeetingCard from '../components/TCSMeetingCard';
 import TCSMeetingForm from '../components/TCSMeetingForm';
@@ -17,8 +17,9 @@ const TCSMeetings = () => {
   const fetchMeetings = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/api/tcs-meetings');
-      setMeetings(res.data);
+      const res = await tcsMeetingsApi.getAll();
+      const data = res.data?.data || res.data || [];
+      setMeetings(data);
       setError(null);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load TCS meetings.');
@@ -39,7 +40,7 @@ const TCSMeetings = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this TCS meeting record?')) return;
     try {
-      await axios.delete(`/api/tcs-meetings/${id}`);
+      await tcsMeetingsApi.delete(id);
       setMeetings(meetings.filter((m) => m._id !== id));
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to delete meeting.');
