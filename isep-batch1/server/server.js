@@ -32,6 +32,7 @@ app.use('/api/photos', require('./routes/photos'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/achievements', require('./routes/achievements'));
 app.use('/api/thoughts', require('./routes/thoughts'));
+app.use('/api/activities', require('./routes/activities'));
 
 // M8 — Member Profile / Portfolio Backend
 app.use('/api/profile', require('./routes/profile'));

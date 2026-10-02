@@ -7,6 +7,7 @@ import Certificates from './pages/Certificates';
 import Achievements from './pages/Achievements';
 import Thoughts from './pages/Thoughts';
 import Admin from './pages/Admin';
+import Activities from './pages/Activities';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -32,6 +33,7 @@ export default function App() {
           )}
           {activeTab === 'achievements' && <Achievements />}
           {activeTab === 'thoughts' && <Thoughts />}
+          {activeTab === 'activities' && <Activities />}
           {activeTab === 'admin' && <Admin />}
         </main>
       </div>
