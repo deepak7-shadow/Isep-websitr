@@ -6,28 +6,7 @@ const verifyToken = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/roleCheck');
 
 // Keep the archive usable in local/demo mode when MongoDB is not configured.
-let fallbackMockInterviews = [
-  {
-    _id: 'mock_demo_1',
-    title: 'Full Stack System Architecture & Scalability',
-    date: new Date('2024-04-10'),
-    interviewer: 'Sridhar Rao (Tech Lead, TCS)',
-    participant: 'Deepak R',
-    description: 'Technical evaluation covering distributed systems, microservices design patterns, and high-concurrency database indexing.',
-    notes: 'Demonstrated outstanding clarity on ACID principles and RESTful API optimizations.',
-    image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1200&q=80'
-  },
-  {
-    _id: 'mock_demo_2',
-    title: 'Data Structures & Algorithmic Problem Solving',
-    date: new Date('2024-04-18'),
-    interviewer: 'Priya Sharma (Senior SWE, ISEP Mentor)',
-    participant: 'Shane Fredrick',
-    description: 'Deep dive into graph traversals (BFS/DFS), dynamic programming, and complexity trade-offs.',
-    notes: 'Clean code execution and strong edge-case handling in live coding session.',
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80'
-  }
-];
+let fallbackMockInterviews = [];
 
 const databaseIsReady = () => mongoose.connection.readyState === 1;
 
@@ -72,16 +51,13 @@ router.get('/', async (req, res) => {
   try {
     if (databaseIsReady()) {
       const interviews = await MockInterview.find().sort({ date: -1, createdAt: -1 });
-      if (interviews && interviews.length > 0) {
-        return res.json({ success: true, count: interviews.length, data: interviews });
-      }
+      return res.json({ success: true, count: interviews.length, data: interviews });
     }
 
     const interviews = [...fallbackMockInterviews].sort((a, b) => new Date(b.date) - new Date(a.date));
     return res.json({ success: true, count: interviews.length, data: interviews });
   } catch (error) {
-    const interviews = [...fallbackMockInterviews].sort((a, b) => new Date(b.date) - new Date(a.date));
-    return res.json({ success: true, count: interviews.length, data: interviews });
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 

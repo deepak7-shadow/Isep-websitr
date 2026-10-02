@@ -19,44 +19,15 @@ const deleteFile = (filePath) => {
   }
 };
 
-const databaseIsReady = () => mongoose.connection.readyState === 1;
-
-const fallbackTCSMeetings = [
-  {
-    _id: 'tcs_demo_1',
-    meetingTitle: 'Industry Readiness & Corporate Mentorship Kickoff',
-    date: new Date('2024-02-20'),
-    guestName: 'Rajesh Gopinathan & TCS Leadership Team',
-    description: 'Foundational mentorship session introducing software development life cycle, enterprise standards, and cloud engineering best practices.',
-    notes: 'Key takeaways: Importance of modular design, code documentation, and CI/CD pipelines in enterprise delivery.',
-    images: ['https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80'],
-    createdAt: new Date('2024-02-20')
-  },
-  {
-    _id: 'tcs_demo_2',
-    meetingTitle: 'TCS Innovation Labs: AI & Cloud Transformation',
-    date: new Date('2024-03-25'),
-    guestName: 'Ananya Deshmukh (Principal Architect, TCS Research)',
-    description: 'Interactive workshop on modern cloud architectures, enterprise AI integrations, and real-time streaming analytics.',
-    notes: 'Discussion on leveraging micro-frontends and scalable event-driven backends.',
-    images: ['https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80'],
-    createdAt: new Date('2024-03-25')
-  }
-];
-
 // @route   GET /api/tcs-meetings
 // @desc    Get all TCS meetings
 router.get('/', async (req, res) => {
   try {
-    if (databaseIsReady()) {
-      const meetings = await TCSMeeting.find().sort({ date: -1, createdAt: -1 });
-      if (meetings && meetings.length > 0) {
-        return res.json(meetings);
-      }
-    }
-    return res.json(fallbackTCSMeetings);
+    const meetings = await TCSMeeting.find().sort({ date: -1, createdAt: -1 });
+    res.json(meetings);
   } catch (err) {
-    return res.json(fallbackTCSMeetings);
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -64,17 +35,17 @@ router.get('/', async (req, res) => {
 // @desc    Get single TCS meeting by ID
 router.get('/:id', async (req, res) => {
   try {
-    if (databaseIsReady()) {
-      const meeting = await TCSMeeting.findById(req.params.id);
-      if (meeting) return res.json(meeting);
+    const meeting = await TCSMeeting.findById(req.params.id);
+    if (!meeting) {
+      return res.status(404).json({ error: 'TCS meeting not found' });
     }
-    const fallback = fallbackTCSMeetings.find((m) => m._id === req.params.id);
-    if (fallback) return res.json(fallback);
-    return res.status(404).json({ error: 'TCS meeting not found' });
+    res.json(meeting);
   } catch (err) {
-    const fallback = fallbackTCSMeetings.find((m) => m._id === req.params.id);
-    if (fallback) return res.json(fallback);
-    return res.status(404).json({ error: 'TCS meeting not found' });
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ error: 'TCS meeting not found' });
+    }
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
