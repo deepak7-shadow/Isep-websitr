@@ -7,6 +7,7 @@ import Certificates from './pages/Certificates';
 import Achievements from './pages/Achievements';
 import Thoughts from './pages/Thoughts';
 import Admin from './pages/Admin';
+import MockInterviews from './pages/MockInterviews';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -31,6 +32,7 @@ export default function App() {
             <Certificates onInspectCert={setSelectedCert} />
           )}
           {activeTab === 'achievements' && <Achievements />}
+          {activeTab === 'mock-interviews' && <MockInterviews />}
           {activeTab === 'thoughts' && <Thoughts />}
           {activeTab === 'admin' && <Admin />}
         </main>
