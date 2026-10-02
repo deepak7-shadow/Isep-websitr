@@ -10,6 +10,7 @@ import Admin from './pages/Admin';
 import Activities from './pages/Activities';
 import MockInterviews from './pages/MockInterviews';
 import Hackathons from './pages/Hackathons';
+import Memories from './pages/Memories';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -38,6 +39,7 @@ export default function App() {
           {activeTab === 'mock-interviews' && <MockInterviews />}
           {activeTab === 'thoughts' && <Thoughts />}
           {activeTab === 'activities' && <Activities />}
+          {activeTab === 'memories' && <Memories />}
           {activeTab === 'admin' && <Admin />}
         </main>
       </div>
@@ -162,3 +164,5 @@ export default function App() {
     </div>
   );
 }
+
+

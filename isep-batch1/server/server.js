@@ -29,6 +29,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/photos', require('./routes/photos'));
+app.use('/api/memories', require('./routes/memories'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/achievements', require('./routes/achievements'));
 app.use('/api/thoughts', require('./routes/thoughts'));
@@ -49,6 +50,7 @@ app.use('/api/hackathons', require('./routes/hackathons'));
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('[API Error]', err.stack);
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error'
@@ -57,21 +59,34 @@ app.use((err, req, res, next) => {
 
 // Port configuration
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`[ISEP Archive Server] REST API running on port ${PORT}`);
   console.log(`[ISEP Archive Server] Endpoints:`);
+
   console.log(`  - POST   /api/auth/login`);
+
   console.log(`  - GET    /api/photos`);
   console.log(`  - POST   /api/photos (Admin)`);
   console.log(`  - DELETE /api/photos/:id (Admin)`);
+
+  // M13 — Memories
+  console.log(`  - GET    /api/memories`);
+  console.log(`  - POST   /api/memories`);
+  console.log(`  - PUT    /api/memories/:id`);
+  console.log(`  - DELETE /api/memories/:id (Admin)`);
+
   console.log(`  - GET    /api/certificates`);
   console.log(`  - POST   /api/certificates (Admin)`);
+
   console.log(`  - GET    /api/achievements`);
   console.log(`  - POST   /api/achievements (Admin)`);
+
   console.log(`  - GET    /api/thoughts`);
   console.log(`  - POST   /api/thoughts`);
   console.log(`  - PATCH  /api/thoughts/:id (Admin)`);
   console.log(`  - DELETE /api/thoughts/:id (Admin)`);
+
   // M8 routes
   console.log(`  - GET    /api/profile (all members)`);
   console.log(`  - GET    /api/profile/:userId`);
