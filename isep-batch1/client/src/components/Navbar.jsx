@@ -8,6 +8,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
     { id: 'achievements', label: 'Achievements' },
     { id: 'hackathons', label: 'Hackathons' },
     { id: 'mock-interviews', label: 'Mock Interviews' },
+    { id: 'tcs-meetings', label: 'TCS Meetings' },
     { id: 'thoughts', label: 'Thoughts Wall' },
     { id: 'activities', label: 'Activities' },
     { id: 'admin', label: 'Admin Portal' }

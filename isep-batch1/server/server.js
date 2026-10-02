@@ -39,6 +39,8 @@ app.use('/api/profile', require('./routes/profile'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/certificates', require('./routes/memberCertificates'));
 app.use('/api/achievements', require('./routes/memberAchievements'));
+// M16 — TCS Meetings
+app.use('/api/tcs-meetings', require('./routes/tcsMeetings'));
 
 // M15 — Mock Interviews
 app.use('/api/mock-interviews', require('./routes/mockInterviews'));
