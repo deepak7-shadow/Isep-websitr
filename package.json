@@ -1,0 +1,10 @@
+{
+  "name": "isep-websitr",
+  "version": "1.0.0",
+  "private": true,
+  "const": "example",
+  "dependencies": {
+    "multer": "^2.4.0"
+  }
+}
+
