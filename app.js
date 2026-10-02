@@ -47,8 +47,7 @@ async function sbDelete(table, id) {
   return true;
 }
 
-// Uploads a File object to Supabase Storage ('archive-media' bucket)
-// Automatically falls back to Base64 Data URL if storage is unavailable
+// Uploads a File object to Supabase Storage ('archive-media' bucket).
 async function uploadMediaFile(file, folder = 'general') {
   if (!file) return '';
 
@@ -73,13 +72,7 @@ async function uploadMediaFile(file, folder = 'general') {
     }
   }
 
-  // Resilient fallback: read as Base64 Data URL
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target.result);
-    reader.onerror = () => resolve('');
-    reader.readAsDataURL(file);
-  });
+  return '';
 }
 
 // Map Supabase snake_case rows → app camelCase shape
@@ -102,6 +95,14 @@ function mapMember(r) {
     portfolio: r.portfolio || ''
   };
 }
+
+const CONTENT_TYPES = {
+  activities: { table: 'activities', label: 'Activities / ISEP Memories', description: 'Workshops, classes, meetings, and ISEP program activities.' },
+  memories: { table: 'memories', label: 'Fun & Memories', description: 'Informal cohort memories and approved archive moments.' },
+  hackathons: { table: 'hackathons', label: 'Hackathons', description: 'Hackathon records, outcomes, and reflections.' },
+  'mock-interviews': { table: 'mock_interviews', label: 'Mock Interviews', description: 'Mock interview sessions and feedback records.' },
+  'tcs-meetings': { table: 'tcs_meetings', label: 'TCS Meetings', description: 'TCS meetings, guest sessions, and minutes.' }
+};
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -130,6 +131,8 @@ class IsepArchiveApp {
     this.currentRoute = 'home';
     this.exhibitMode = 'warm-amber';
     this.isAdmin = localStorage.getItem('isep_admin_token') ? true : false;
+    this.adminProfile = null;
+    this.adminContentType = 'activities';
     this.selectedRating = 5;
 
     // Start empty — data loads async from Supabase
@@ -161,11 +164,12 @@ class IsepArchiveApp {
           try {
             const { data: adminRow } = await _sb
               .from('admin_users')
-              .select('is_approved')
+              .select('is_approved, role, full_name')
               .eq('email', userEmail)
               .single();
             if (adminRow?.is_approved === true) {
               this.isAdmin = true;
+              this.adminProfile = adminRow;
               const emailEl = document.getElementById('admin-active-email');
               if (emailEl) emailEl.textContent = userEmail;
               this.updateAdminHeaderStatus();
@@ -230,7 +234,7 @@ class IsepArchiveApp {
         return;
       }
       const hash = window.location.hash.replace('#', '') || 'home';
-      const valid = ['home', 'gallery', 'certificates', 'thoughts-wall', 'members', 'dashboard', 'member-profile', 'admin-portal'];
+      const valid = ['home', 'gallery', 'certificates', 'thoughts-wall', 'members', 'dashboard', 'member-profile', 'admin-portal', ...Object.keys(CONTENT_TYPES)];
       this.navigateTo(valid.includes(hash) ? hash : 'home', false);
     };
 
@@ -294,6 +298,8 @@ class IsepArchiveApp {
       this.renderMemberProfile(this.profileSlug);
     } else if (route === 'home') {
       this.updateHomeStats();
+    } else if (CONTENT_TYPES[route]) {
+      this.renderContentSection(route);
     }
   }
 
@@ -370,12 +376,25 @@ class IsepArchiveApp {
           `;
         }
 
+        async renderContentSection(type) {
+          const config = CONTENT_TYPES[type];
+          const container = document.getElementById(`${type}-content`);
+          if (!config || !container) return;
+          container.innerHTML = `<div class="py-space-xl text-center text-on-surface-variant">Loading ${escapeHtml(config.label)}…</div>`;
+          const rows = (await sbFetch(config.table, { status: 'approved' })).sort((a, b) => String(b.event_date || b.created_at || '').localeCompare(String(a.event_date || a.created_at || '')));
+          container.innerHTML = `
+            <div class="mb-space-lg"><span class="text-xs text-primary uppercase tracking-widest">ISEP Archive</span><h1 class="font-serif text-4xl text-on-surface font-bold mt-1">${escapeHtml(config.label)}</h1><p class="text-on-surface-variant mt-2">${escapeHtml(config.description)}</p></div>
+            <div class="grid gap-space-md md:grid-cols-2 lg:grid-cols-3">
+              ${rows.length ? rows.map(row => `<article class="bg-surface-container rounded-xl border border-outline-variant/20 overflow-hidden">${row.image_url ? `<img src="${escapeHtml(row.image_url)}" alt="" class="w-full h-44 object-cover"/>` : ''}<div class="p-space-md"><h2 class="font-serif text-xl text-on-surface font-bold">${escapeHtml(row.title || '')}</h2><p class="text-xs text-primary mt-1">${escapeHtml(row.event_date || '')}</p><p class="text-sm text-on-surface-variant mt-space-sm whitespace-pre-line">${escapeHtml(row.description || '')}</p>${row.extra ? `<p class="text-xs text-on-surface-variant mt-space-sm">${escapeHtml(row.extra)}</p>` : ''}</div></article>`).join('') : `<div class="col-span-full rounded-xl border border-outline-variant/20 bg-surface-container p-space-lg text-center text-on-surface-variant">No approved ${escapeHtml(config.label.toLowerCase())} have been published yet.</div>`}
+            </div>`;
+        }
+
         async renderMemberDashboard() {
           const container = document.getElementById('member-dashboard');
           if (!container) return;
           const { data } = _sb ? await _sb.auth.getSession() : { data: {} };
           if (!data?.session) {
-            container.innerHTML = '<div class="rounded-2xl border border-primary/20 bg-surface-container p-space-lg max-w-xl mx-auto"><h1 class="font-serif text-3xl text-on-surface font-bold">Member Dashboard</h1><p class="text-on-surface-variant mt-space-sm">Sign in with your ISEP member account to manage your profile and portfolio.</p><form id="member-login-form" class="space-y-space-sm mt-space-md"><input id="member-login-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-login-password" type="password" required placeholder="Password" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded bg-primary text-on-primary font-semibold">Sign in</button><p id="member-login-message" class="text-sm text-on-surface-variant"></p></form></div>';
+            container.innerHTML = '<div class="rounded-2xl border border-primary/20 bg-surface-container p-space-lg max-w-xl mx-auto"><h1 class="font-serif text-3xl text-on-surface font-bold">Member Dashboard</h1><p class="text-on-surface-variant mt-space-sm">Sign in or submit a member registration request. New profiles remain pending until an ISEP Head approves them.</p><form id="member-login-form" class="space-y-space-sm mt-space-md"><input id="member-login-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-login-password" type="password" required placeholder="Password" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded bg-primary text-on-primary font-semibold">Sign in</button><p id="member-login-message" class="text-sm text-on-surface-variant"></p></form><form id="member-register-form" class="space-y-space-sm mt-space-lg pt-space-lg border-t border-outline-variant/20"><h2 class="font-semibold text-on-surface">Request member access</h2><input id="member-register-name" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-register-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-register-password" type="password" minlength="6" required placeholder="Password (6+ characters)" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded border border-primary/40 text-primary font-semibold">Submit registration</button><p id="member-register-message" class="text-sm text-on-surface-variant"></p></form></div>';
             document.getElementById('member-login-form')?.addEventListener('submit', async (event) => {
               event.preventDefault();
               const message = document.getElementById('member-login-message');
@@ -383,22 +402,42 @@ class IsepArchiveApp {
               if (error) { message.textContent = error.message; return; }
               this.renderMemberDashboard();
             });
+            document.getElementById('member-register-form')?.addEventListener('submit', async (event) => {
+              event.preventDefault();
+              const message = document.getElementById('member-register-message');
+              const email = document.getElementById('member-register-email').value.trim().toLowerCase();
+              const fullName = document.getElementById('member-register-name').value.trim();
+              const password = document.getElementById('member-register-password').value;
+              const { data, error } = await _sb.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+              if (error) { message.textContent = error.message; return; }
+              if (data?.user) {
+                const { error: profileError } = await _sb.from('members').insert([{ auth_user_id: data.user.id, email, full_name: fullName, slug: fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), approval_status: 'pending', is_approved: false, role: 'member' }]);
+                if (profileError) { message.textContent = profileError.message; return; }
+              }
+              message.textContent = 'Registration submitted. Verify your email, then wait for ISEP Head approval.';
+              event.currentTarget.reset();
+            });
             return;
           }
           const user = data.session.user;
           const { data: member } = await _sb.from('members').select('*').eq('auth_user_id', user.id).maybeSingle();
           if (!member) {
-            container.innerHTML = '<div class="rounded-xl border border-primary/20 bg-surface-container p-space-lg text-on-surface-variant">Your account is authenticated, but an approved member profile has not been linked yet. Ask an administrator to add your profile.</div>';
+            container.innerHTML = '<div class="rounded-xl border border-primary/20 bg-surface-container p-space-lg text-on-surface-variant">Your registration is awaiting an ISEP Head decision, or no profile has been linked yet. Contact an administrator if this status is unexpected.</div>';
+            return;
+          }
+          if (member.approval_status && member.approval_status !== 'approved' && member.is_approved !== true) {
+            container.innerHTML = `<div class="rounded-xl border border-primary/20 bg-surface-container p-space-lg text-on-surface-variant"><h1 class="font-serif text-2xl text-on-surface font-bold">Registration ${escapeHtml(member.approval_status)}</h1><p class="mt-space-sm">Your profile is not public until it is approved by an ISEP Head.</p></div>`;
             return;
           }
           const profile = mapMember(member);
           const completionFields = [profile.fullName, profile.bio, profile.photo, profile.skills.length, profile.github || profile.linkedin || profile.portfolio];
           const completion = Math.round((completionFields.filter(Boolean).length / completionFields.length) * 100);
-          container.innerHTML = `<div class="space-y-space-lg"><div><span class="text-xs text-primary uppercase tracking-widest">Member Workspace</span><h1 class="font-serif text-4xl text-on-surface font-bold">Welcome, ${escapeHtml(profile.fullName)}</h1><p class="text-on-surface-variant mt-1">Profile completion: ${completion}%</p></div><form id="member-profile-form" class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg space-y-space-sm"><input name="full_name" value="${escapeHtml(member.full_name || '')}" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><textarea name="bio" rows="4" placeholder="About you" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface">${escapeHtml(member.bio || '')}</textarea><input name="skills" value="${escapeHtml(profile.skills.join(', '))}" placeholder="Skills, comma separated" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_url" type="url" value="${escapeHtml(member.photo_url || '')}" placeholder="Profile photo URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><div class="flex gap-space-sm"><input name="github" type="url" value="${escapeHtml(member.github || '')}" placeholder="GitHub URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="linkedin" type="url" value="${escapeHtml(member.linkedin || '')}" placeholder="LinkedIn URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/></div><button class="px-space-lg py-2.5 rounded bg-primary text-on-primary font-semibold">Save profile</button><p id="member-save-message" class="text-sm text-on-surface-variant"></p></form><a data-member-slug="${escapeHtml(profile.slug)}" href="/members/${encodeURIComponent(profile.slug)}" class="inline-flex px-space-lg py-2.5 rounded border border-primary/30 text-primary">View public portfolio →</a></div>`;
+          container.innerHTML = `<div class="space-y-space-lg"><div><span class="text-xs text-primary uppercase tracking-widest">Member Workspace</span><h1 class="font-serif text-4xl text-on-surface font-bold">Welcome, ${escapeHtml(profile.fullName)}</h1><p class="text-on-surface-variant mt-1">Profile completion: ${completion}%</p></div><form id="member-profile-form" class="bg-surface-container rounded-2xl border border-primary/20 p-space-lg space-y-space-sm"><input name="full_name" value="${escapeHtml(member.full_name || '')}" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><textarea name="bio" rows="4" placeholder="About you" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface">${escapeHtml(member.bio || '')}</textarea><input name="skills" value="${escapeHtml(profile.skills.join(', '))}" placeholder="Skills, comma separated" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_url" type="url" value="${escapeHtml(member.photo_url || '')}" placeholder="Profile photo URL (optional)" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="photo_file" type="file" accept="image/*" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><div class="flex gap-space-sm"><input name="github" type="url" value="${escapeHtml(member.github || '')}" placeholder="GitHub URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input name="linkedin" type="url" value="${escapeHtml(member.linkedin || '')}" placeholder="LinkedIn URL" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/></div><button class="px-space-lg py-2.5 rounded bg-primary text-on-primary font-semibold">Save profile</button><p id="member-save-message" class="text-sm text-on-surface-variant"></p></form><a data-member-slug="${escapeHtml(profile.slug)}" href="/members/${encodeURIComponent(profile.slug)}" class="inline-flex px-space-lg py-2.5 rounded border border-primary/30 text-primary">View public portfolio →</a></div>`;
           document.getElementById('member-profile-form')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             const form = new FormData(event.currentTarget);
-            const changes = { full_name: form.get('full_name'), bio: form.get('bio'), skills: String(form.get('skills') || '').split(',').map((item) => item.trim()).filter(Boolean), photo_url: form.get('photo_url'), github: form.get('github'), linkedin: form.get('linkedin') };
+            const uploadedPhoto = form.get('photo_file')?.size ? await uploadMediaFile(form.get('photo_file'), `members/${user.id}`) : '';
+            const changes = { full_name: form.get('full_name'), bio: form.get('bio'), skills: String(form.get('skills') || '').split(',').map((item) => item.trim()).filter(Boolean), photo_url: uploadedPhoto || form.get('photo_url'), github: form.get('github'), linkedin: form.get('linkedin') };
             const { error } = await _sb.from('members').update(changes).eq('auth_user_id', user.id);
             document.getElementById('member-save-message').textContent = error ? error.message : 'Profile saved.';
             if (!error) { this.members = []; this.renderMemberDashboard(); }
@@ -1124,7 +1163,7 @@ class IsepArchiveApp {
           // 2. Check database approval
           const { data: adminRow, error: dbErr } = await _sb
             .from('admin_users')
-            .select('is_approved, full_name')
+            .select('is_approved, role, full_name')
             .eq('email', email)
             .single();
 
@@ -1148,12 +1187,13 @@ class IsepArchiveApp {
           // 3. Approved — grant access
           localStorage.setItem('isep_admin_token', data.session.access_token);
           this.isAdmin = true;
+          this.adminProfile = adminRow;
           const emailEl = document.getElementById('admin-active-email');
           if (emailEl) emailEl.textContent = email;
           this.updateAdminHeaderStatus();
           await this.loadAllThoughtsForAdmin();
           this.renderAdminView();
-          this.showToast(`Welcome, ${adminRow.full_name || 'Coordinator'}. Logged into Archival Directorate.`);
+          this.showToast(`Welcome, ${adminRow.full_name || 'Coordinator'}. ${adminRow.role === 'head' ? 'ISEP Head access enabled.' : 'Coordinator access enabled.'}`);
 
         } catch (err) {
           console.warn('[Admin Login]', err.message);
@@ -1250,11 +1290,82 @@ class IsepArchiveApp {
         btn.className = "admin-tab-btn px-space-md py-space-xs bg-primary text-on-primary font-semibold rounded-lg shadow-sm transition-all";
 
         document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.add('hidden'));
-        const activePanel = document.getElementById(`admin-panel-${tab}`);
+        const contentTab = CONTENT_TYPES[tab] ? 'content' : tab;
+        const activePanel = document.getElementById(`admin-panel-${contentTab}`);
         if (activePanel) activePanel.classList.remove('hidden');
+        if (tab === 'members') this.loadAdminMembers();
+        if (CONTENT_TYPES[tab]) this.setAdminContentType(tab);
       });
     });
+    this.initAdminContentManagement();
+    this.initAdminLegacyControls();
 
+  }
+
+  async loadAdminMembers() {
+    const body = document.getElementById('admin-members-table-body');
+    if (!body || !this.isAdmin) return;
+    const search = (document.getElementById('admin-member-search')?.value || '').trim().toLowerCase();
+    const rows = (await sbFetch('members')).filter(row => !search || `${row.full_name || ''} ${row.email || ''}`.toLowerCase().includes(search));
+    body.innerHTML = rows.length ? rows.map(row => `<tr><td class="py-2.5 px-3 text-on-surface">${escapeHtml(row.full_name || row.email || 'Unnamed')}</td><td class="py-2.5 px-3">${escapeHtml(row.approval_status || (row.is_approved ? 'approved' : 'pending'))}</td><td class="py-2.5 px-3">${escapeHtml(row.role || 'member')}</td><td class="py-2.5 px-3 text-right"><button data-member-approval="${row.id}" data-status="approved" class="text-primary hover:underline mr-3">Approve</button><button data-member-approval="${row.id}" data-status="rejected" class="text-error hover:underline">Reject</button></td></tr>`).join('') : '<tr><td colspan="4" class="py-space-lg text-center text-on-surface-variant">No member registrations found.</td></tr>';
+    body.querySelectorAll('[data-member-approval]').forEach(button => button.addEventListener('click', async () => {
+      const id = button.getAttribute('data-member-approval');
+      const status = button.getAttribute('data-status');
+      const ok = await sbUpdate('members', id, { approval_status: status, is_approved: status === 'approved', approved: status === 'approved' });
+      if (ok) { this.showToast(`Member ${status}.`); this.loadAdminMembers(); this.members = []; }
+    }));
+  }
+
+  async setAdminContentType(type) {
+    if (!CONTENT_TYPES[type]) return;
+    this.adminContentType = type;
+    const config = CONTENT_TYPES[type];
+    const title = document.getElementById('admin-content-title');
+    const help = document.getElementById('admin-content-help');
+    if (title) title.textContent = config.label;
+    if (help) help.textContent = `${config.description} Only approved records appear publicly.`;
+    const body = document.getElementById('admin-content-table-body');
+    if (!body) return;
+    const rows = await sbFetch(config.table);
+    body.innerHTML = rows.length ? rows.map(row => `<tr><td class="py-2.5 px-3 text-on-surface">${escapeHtml(row.title || '')}</td><td class="py-2.5 px-3">${escapeHtml(row.event_date || '')}</td><td class="py-2.5 px-3 max-w-sm truncate">${escapeHtml(row.description || '')}</td><td class="py-2.5 px-3 text-right"><button data-content-approve="${row.id}" class="text-primary hover:underline mr-3">${row.status === 'approved' ? 'Hide' : 'Approve'}</button><button data-content-delete="${row.id}" class="text-error hover:underline">Delete</button></td></tr>`).join('') : '<tr><td colspan="4" class="py-space-lg text-center text-on-surface-variant">No records yet. Add the first real record above.</td></tr>';
+    body.querySelectorAll('[data-content-approve]').forEach(button => button.addEventListener('click', async () => {
+      const row = rows.find(item => item.id === button.getAttribute('data-content-approve'));
+      if (row && await sbUpdate(config.table, row.id, { status: row.status === 'approved' ? 'hidden' : 'approved' })) this.setAdminContentType(type);
+    }));
+    body.querySelectorAll('[data-content-delete]').forEach(button => button.addEventListener('click', async () => {
+      if (await sbDelete(config.table, button.getAttribute('data-content-delete'))) { this.showToast('Record deleted.'); this.setAdminContentType(type); }
+    }));
+  }
+
+  initAdminContentManagement() {
+    document.getElementById('admin-member-search')?.addEventListener('input', () => this.loadAdminMembers());
+    const form = document.getElementById('admin-content-form');
+    if (!form) return;
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!this.isAdmin) return;
+      const message = document.getElementById('admin-content-message');
+      const file = document.getElementById('admin-content-file')?.files?.[0];
+      const imageUrl = file ? await uploadMediaFile(file, this.adminContentType) : '';
+      if (file && !imageUrl) { if (message) message.textContent = 'Upload failed. Check the archive-media bucket and storage policies.'; return; }
+      const row = {
+        title: document.getElementById('admin-content-title-input').value.trim(),
+        event_date: document.getElementById('admin-content-date').value || null,
+        description: document.getElementById('admin-content-description').value.trim(),
+        extra: document.getElementById('admin-content-extra').value.trim(),
+        image_url: imageUrl || null,
+        status: 'pending',
+        created_by: this.adminProfile?.user_id || null
+      };
+      const saved = await sbInsert(CONTENT_TYPES[this.adminContentType].table, row);
+      if (!saved) { if (message) message.textContent = 'Could not save this record. Check the schema and RLS policies.'; return; }
+      form.reset();
+      if (message) message.textContent = 'Saved as pending. Approve it from this panel to publish.';
+      this.setAdminContentType(this.adminContentType);
+    });
+  }
+
+  initAdminLegacyControls() {
     // Setup Photo Dropzone & Device File Picker
     const photoFileInput = document.getElementById('new-photo-file');
     const photoEmptyState = document.getElementById('photo-file-empty-state');
@@ -1277,6 +1388,7 @@ class IsepArchiveApp {
         alert('Please select an image file (PNG, JPG, WEBP, or GIF).');
         return;
       }
+
       if (photoFileName) photoFileName.textContent = file.name;
       if (photoFileSize) photoFileSize.textContent = formatBytes(file.size);
       if (photoPreviewImg) {
