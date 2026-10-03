@@ -1357,6 +1357,15 @@ class IsepArchiveApp {
     });
     this.initAdminContentManagement();
     this.initAdminLegacyControls();
+    // These panels are intentionally direct dashboard children. This also
+    // repairs older cached markup where they were nested in achievements.
+    const adminDashboard = document.getElementById('admin-dashboard-wrapper');
+    ['admin-panel-members', 'admin-panel-content'].forEach((panelId) => {
+      const panel = document.getElementById(panelId);
+      if (adminDashboard && panel && panel.parentElement !== adminDashboard) {
+        adminDashboard.appendChild(panel);
+      }
+    });
 
   }
 
