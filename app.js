@@ -10,8 +10,12 @@
 const SUPABASE_URL = 'https://qilreacksziadajadkji.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbHJlYWNrc3ppYWRhamFka2ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2NzExNjIsImV4cCI6MjEwNjI0NzE2Mn0.8XPjdAfSzwCFCRLPp7SNw9RylViB_lbmXnQb12gqI2g';
 
-// Initialize Supabase client (loaded via CDN in index.html)
-const _sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+// Initialize Supabase client (loaded via CDN in index.html). A public key may
+// be supplied before this script as window.__ISEP_SUPABASE_ANON_KEY__.
+const _sbKey = window.__ISEP_SUPABASE_ANON_KEY__ || SUPABASE_ANON_KEY;
+const _sb = window.supabase && _sbKey && _sbKey !== '******'
+  ? window.supabase.createClient(SUPABASE_URL, _sbKey)
+  : null;
 
 // Helper: fetch from Supabase table with optional filter
 async function sbFetch(table, filter = {}) {
@@ -408,10 +412,11 @@ class IsepArchiveApp {
           if (!container) return;
           const { data } = _sb ? await _sb.auth.getSession() : { data: {} };
           if (!data?.session) {
-            container.innerHTML = '<div class="rounded-2xl border border-primary/20 bg-surface-container p-space-lg max-w-xl mx-auto"><h1 class="font-serif text-3xl text-on-surface font-bold">Member Dashboard</h1><p class="text-on-surface-variant mt-space-sm">Sign in or submit a member registration request. New profiles remain pending until an ISEP Head approves them.</p><form id="member-login-form" class="space-y-space-sm mt-space-md"><input id="member-login-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-login-password" type="password" required placeholder="Password" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded bg-primary text-on-primary font-semibold">Sign in</button><p id="member-login-message" class="text-sm text-on-surface-variant"></p></form><form id="member-register-form" class="space-y-space-sm mt-space-lg pt-space-lg border-t border-outline-variant/20"><h2 class="font-semibold text-on-surface">Request member access</h2><input id="member-register-name" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-register-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-register-password" type="password" minlength="6" required placeholder="Password (6+ characters)" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded border border-primary/40 text-primary font-semibold">Submit registration</button><p id="member-register-message" class="text-sm text-on-surface-variant"></p></form></div>';
+            container.innerHTML = '<div class="rounded-2xl border border-primary/20 bg-surface-container p-space-lg max-w-xl mx-auto"><h1 class="font-serif text-3xl text-on-surface font-bold">Member Login</h1><p class="text-on-surface-variant mt-space-sm">Sign in or submit a member registration request. New profiles remain pending until an ISEP Head approves them.</p><form id="member-login-form" class="space-y-space-sm mt-space-md"><input id="member-login-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-login-password" type="password" required placeholder="Password" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded bg-primary text-on-primary font-semibold">Sign in</button><p id="member-login-message" class="text-sm text-on-surface-variant"></p></form><form id="member-register-form" class="space-y-space-sm mt-space-lg pt-space-lg border-t border-outline-variant/20"><h2 class="font-semibold text-on-surface">Request member access</h2><input id="member-register-name" required placeholder="Full name" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-register-email" type="email" required placeholder="Email" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><input id="member-register-password" type="password" minlength="6" required placeholder="Password (6+ characters)" class="w-full px-space-md py-2.5 rounded bg-surface-container-high border border-outline-variant/30 text-on-surface"/><button class="w-full py-2.5 rounded border border-primary/40 text-primary font-semibold">Submit registration</button><p id="member-register-message" class="text-sm text-on-surface-variant"></p></form></div>';
             document.getElementById('member-login-form')?.addEventListener('submit', async (event) => {
               event.preventDefault();
               const message = document.getElementById('member-login-message');
+              if (!_sb) { message.textContent = 'Login is unavailable until the Supabase public anon key is configured.'; return; }
               const { data: loginData, error } = await _sb.auth.signInWithPassword({ email: document.getElementById('member-login-email').value.trim(), password: document.getElementById('member-login-password').value });
               if (error) { message.textContent = error.message; return; }
               this.currentUserId = loginData.user?.id || null;
@@ -420,6 +425,7 @@ class IsepArchiveApp {
             document.getElementById('member-register-form')?.addEventListener('submit', async (event) => {
               event.preventDefault();
               const message = document.getElementById('member-register-message');
+              if (!_sb) { message.textContent = 'Registration is unavailable until the Supabase public anon key is configured.'; return; }
               const email = document.getElementById('member-register-email').value.trim().toLowerCase();
               const fullName = document.getElementById('member-register-name').value.trim();
               const password = document.getElementById('member-register-password').value;
