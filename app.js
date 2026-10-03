@@ -8,7 +8,7 @@
 
 // ================= SUPABASE CLIENT INIT =================
 const SUPABASE_URL = 'https://qilreacksziadajadkji.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpbHJlYWNrc3ppYWRhamFka2ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2NzExNjIsImV4cCI6MjEwNjI0NzE2Mn0.8XPjdAfSzwCFCRLPp7SNw9RylViB_lbmXnQb12gqI2g';
+const SUPABASE_ANON_KEY = 'sb_publishable_XYWwdW2zKUnKdpjedRxc2Q_Y4fXRscw';
 
 // Initialize Supabase client (loaded via CDN in index.html). A public key may
 // be supplied before this script as window.__ISEP_SUPABASE_ANON_KEY__.
