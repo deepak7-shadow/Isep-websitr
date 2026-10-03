@@ -418,7 +418,25 @@ class IsepArchiveApp {
               const message = document.getElementById('member-login-message');
               if (!_sb) { message.textContent = 'Login is unavailable until the Supabase public anon key is configured.'; return; }
               const { data: loginData, error } = await _sb.auth.signInWithPassword({ email: document.getElementById('member-login-email').value.trim(), password: document.getElementById('member-login-password').value });
-              if (error) { message.textContent = error.message; return; }
+              if (error) {
+                if (error.message?.toLowerCase().includes('email not confirmed')) {
+                  message.innerHTML = 'Your email is not confirmed. Check your inbox, or <button type="button" id="member-resend-confirmation" class="text-primary underline font-semibold">resend the confirmation email</button>.';
+                  document.getElementById('member-resend-confirmation')?.addEventListener('click', async () => {
+                    const resendButton = document.getElementById('member-resend-confirmation');
+                    if (resendButton) { resendButton.disabled = true; resendButton.textContent = 'Sending…'; }
+                    const { error: resendError } = await _sb.auth.resend({
+                      type: 'signup',
+                      email: document.getElementById('member-login-email').value.trim()
+                    });
+                    message.textContent = resendError
+                      ? `Unable to resend confirmation: ${resendError.message}`
+                      : 'Confirmation email sent. Open it, then return here and sign in again.';
+                  });
+                } else {
+                  message.textContent = error.message;
+                }
+                return;
+              }
               this.currentUserId = loginData.user?.id || null;
               this.renderMemberDashboard();
             });
