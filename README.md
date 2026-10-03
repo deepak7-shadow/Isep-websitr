@@ -121,6 +121,19 @@ and apply Storage policies before uploading images or documents. The browser
 requires only the project URL and public anon key already configured in
 `app.js`; never expose a service-role key.
 
+For static Vercel hosting, define the public key before loading `app.js` if it
+is not committed in the file:
+
+```html
+<script>
+  window.__ISEP_SUPABASE_ANON_KEY__ = 'your Supabase publishable/anon key';
+</script>
+<script src="app.js"></script>
+```
+
+The live navigation opens member authentication at `#dashboard` / **Member
+Login**. The **Admin Login** control remains separate at `#admin-portal`.
+
 After creating the two Auth accounts, set their `admin_users.role` to `head`
 and approve them with the SQL shown in `SUPABASE_SCHEMA.md`. Link exactly the
 18 verified member Auth users through `members.auth_user_id` and approve them
